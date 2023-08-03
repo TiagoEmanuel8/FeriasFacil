@@ -1,26 +1,29 @@
 import { Injectable } from '@nestjs/common';
+import { PrismaService } from 'src/database/prisma.service';
 import { CreatePositionDto } from './dto/create-position.dto';
 import { UpdatePositionDto } from './dto/update-position.dto';
 
 @Injectable()
 export class PositionsService {
-  create(createPositionDto: CreatePositionDto) {
-    return 'This action adds a new position';
+  constructor(private prisma: PrismaService) {}
+
+  async create(position: CreatePositionDto) {
+    return await this.prisma.position.create({ data: position });
   }
 
-  findAll() {
-    return `This action returns all positions`;
+  async findAll() {
+    return '';
   }
 
-  findOne(id: number) {
+  async findOne(id: number) {
     return `This action returns a #${id} position`;
   }
 
-  update(id: number, updatePositionDto: UpdatePositionDto) {
+  async update(id: number, updatePositionDto: UpdatePositionDto) {
     return `This action updates a #${id} position`;
   }
 
-  remove(id: number) {
+  async remove(id: number) {
     return `This action removes a #${id} position`;
   }
 }

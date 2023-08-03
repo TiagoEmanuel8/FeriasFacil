@@ -1,1 +1,3 @@
-export class CreatePositionDto {}
+export class CreatePositionDto {
+  name: string;
+}
