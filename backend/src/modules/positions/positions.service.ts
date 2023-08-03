@@ -12,7 +12,7 @@ export class PositionsService {
   }
 
   async findAll() {
-    return '';
+    return await this.prisma.position.findMany();
   }
 
   async findOne(id: number) {
