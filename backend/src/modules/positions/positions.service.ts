@@ -24,6 +24,6 @@ export class PositionsService {
   }
 
   async remove(id: number) {
-    return `This action removes a #${id} position`;
+    return await this.repository.remove(id);
   }
 }
