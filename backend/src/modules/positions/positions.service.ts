@@ -16,7 +16,7 @@ export class PositionsService {
   }
 
   async findOne(id: number) {
-    return `This action returns a #${id} position`;
+    return await this.prisma.position.findUnique({ where: { id } });
   }
 
   async update(id: number, updatePositionDto: UpdatePositionDto) {
