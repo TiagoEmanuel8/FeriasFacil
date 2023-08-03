@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
-import { UsersModule } from './users/users.module';
-import { LoginModule } from './login/login.module';
-import { PositionModule } from './position/position.module';
-import { VacationModule } from './vacation/vacation.module';
+import { UsersModule } from './modules/users/users.module';
+import { VacationsModule } from './modules/vacations/vacations.module';
+import { LoginModule } from './modules/login/login.module';
+import { PositionsModule } from './modules/positions/positions.module';
 
 @Module({
-  imports: [UsersModule, LoginModule, PositionModule, VacationModule],
+  imports: [UsersModule, VacationsModule, LoginModule, PositionsModule],
   controllers: [],
   providers: [],
 })
