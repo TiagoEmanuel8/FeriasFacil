@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../../../database/prisma.service';
 import { CreatePositionDto } from '../dto/create-position.dto';
 import { UpdatePositionDto } from '../dto/update-position.dto';
 import { PositionEntity } from '../entities/position.entity';
 
 @Injectable()
-export class UsersRepository {
+export class PositionRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(createPositionDto: CreatePositionDto): Promise<PositionEntity> {
@@ -15,13 +15,21 @@ export class UsersRepository {
   }
 
   async findAll(): Promise<PositionEntity[]> {
-    return await this.prisma.user.findMany();
+    return await this.prisma.position.findMany();
   }
 
   async findOne(id: number): Promise<PositionEntity> {
-    return this.prisma.user.findUnique({
+    return this.prisma.position.findUnique({
       where: {
         id,
+      },
+    });
+  }
+
+  async verifyExisteField(position: string): Promise<PositionEntity> {
+    return this.prisma.position.findFirst({
+      where: {
+        position,
       },
     });
   }
@@ -30,7 +38,7 @@ export class UsersRepository {
     id: number,
     updatePositionDto: UpdatePositionDto,
   ): Promise<PositionEntity> {
-    return this.prisma.user.update({
+    return this.prisma.position.update({
       where: {
         id,
       },
@@ -39,7 +47,7 @@ export class UsersRepository {
   }
 
   async remove(id: number): Promise<PositionEntity> {
-    return this.prisma.user.delete({
+    return this.prisma.position.delete({
       where: {
         id,
       },

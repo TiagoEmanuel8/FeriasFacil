@@ -12,9 +12,11 @@ datasource db {
 
 model Position {
   id        Int      @id @default(autoincrement())
-  name      String   @map(name: "position_name")
+  position  String
   createdAt DateTime @default(now()) @updatedAt @map(name: "created_at")
   users     User[]
+
+  @@map("position")
 }
 
 model User {
@@ -28,6 +30,8 @@ model User {
   type       String
   createdAt  DateTime   @default(now()) @updatedAt @map(name: "created_at")
   vacations  Vacation[]
+
+  @@map("user")
 }
 
 model Vacation {
@@ -38,4 +42,6 @@ model Vacation {
   user           User     @relation(fields: [userId], references: [id])
   userId         Int      @map(name: "user_id")
   createdAt      DateTime @default(now()) @updatedAt @map(name: "created_at")
+
+  @@map("vacation")
 }

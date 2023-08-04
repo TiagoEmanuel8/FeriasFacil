@@ -1,7 +1,15 @@
-import { User } from '@prisma/client';
-
-export class PositionEntity implements User {
+interface IPositionEntityInterface {
   id?: number;
-  name: string;
+  position: string;
   createdAt?: Date;
+}
+
+export class PositionEntity implements IPositionEntityInterface {
+  id?: number;
+  position: string;
+  createdAt?: Date;
+
+  constructor(position: string) {
+    this.position = position;
+  }
 }

@@ -1,6 +1,7 @@
-import { IsString } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export class CreatePositionDto {
+  @IsNotEmpty()
   @IsString()
-  name: string;
+  position: string;
 }
