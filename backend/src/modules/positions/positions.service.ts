@@ -36,6 +36,6 @@ export class PositionsService {
   async remove(id: number) {
     const position = await this.repository.findOne(id);
     if (!position) throw new NotFoundError(`Position ${id} is not found`);
-    return await this.repository.remove(id);
+    await this.repository.remove(id);
   }
 }

@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import {
   IsDate,
   IsEmail,
@@ -21,6 +22,7 @@ export class CreateUserDto {
 
   @IsNotEmpty()
   @IsDate()
+  @Type(() => Date)
   hireDate: Date;
 
   @IsNotEmpty()

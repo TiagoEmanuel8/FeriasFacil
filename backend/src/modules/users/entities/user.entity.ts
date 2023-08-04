@@ -13,5 +13,6 @@ export class UserEntity implements IUserEntityInterface {
   password: string;
   name: string;
   idPosition: number;
+  positionName?: string;
   hireDate: Date;
 }
