@@ -5,17 +5,29 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserRepository } from './repositories/users.repository';
 import { Prisma } from '@prisma/client';
+import { PasswordHashService } from 'src/common/encryption/password-hash';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly repository: UserRepository) {}
+  constructor(
+    private readonly repository: UserRepository,
+    private readonly passwordHashService: PasswordHashService,
+  ) {}
 
   async create(createUserDto: CreateUserDto) {
-    const { email } = createUserDto;
+    const { email, password } = createUserDto;
     const verifyEmail = await this.repository.verifyExisteField(email);
     if (verifyEmail) throw new ConflictError('email already exists');
 
-    return await this.repository.create(createUserDto);
+    const hashedPassword = await this.passwordHashService.hashPassword(
+      password,
+    );
+    const userWithHashedPassword = {
+      ...createUserDto,
+      password: hashedPassword,
+    };
+
+    return await this.repository.create(userWithHashedPassword);
   }
 
   async findAll() {
