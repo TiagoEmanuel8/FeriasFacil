@@ -1,1 +1,4 @@
-export class Login {}
+export class LoginEntity {
+  email: string;
+  password: string;
+}
