@@ -26,13 +26,13 @@ export class UserRepository {
     });
   }
 
-  // async verifyExisteField(data: string): Promise<UserEntity> {
-  //   return this.prisma.user.findFirst({
-  //     where: {
-  //       data,
-  //     },
-  //   });
-  // }
+  async verifyExisteField(email: string): Promise<UserEntity> {
+    return this.prisma.user.findFirst({
+      where: {
+        email,
+      },
+    });
+  }
 
   async update(
     id: number,

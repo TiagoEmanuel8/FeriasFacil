@@ -10,7 +10,7 @@ export class PositionsService {
   constructor(private readonly repository: PositionRepository) {}
 
   async create(createPositionDto: CreatePositionDto) {
-    const position = createPositionDto.position;
+    const { position } = createPositionDto;
     const verifyPosition = await this.repository.verifyExisteField(position);
     if (verifyPosition) throw new ConflictError('position already exists');
 
@@ -24,7 +24,7 @@ export class PositionsService {
   async findOne(id: number) {
     const position = await this.repository.findOne(id);
     if (!position) throw new NotFoundError(`Position ${id} is not found`);
-    return await this.repository.findOne(id);
+    return position;
   }
 
   async update(id: number, updatePositionDto: UpdatePositionDto) {
