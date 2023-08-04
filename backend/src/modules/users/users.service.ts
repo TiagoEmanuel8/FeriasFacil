@@ -23,7 +23,7 @@ export class UsersService {
     return await this.repository.update(id, updateUserDto);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async remove(id: number) {
+    return await this.repository.remove(id);
   }
 }
