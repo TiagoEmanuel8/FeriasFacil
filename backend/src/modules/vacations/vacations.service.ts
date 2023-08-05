@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateVacationDto } from './dto/create-vacation.dto';
 import { UpdateVacationDto } from './dto/update-vacation.dto';
 import { VacationRepository } from './repositories/vacations.repository';
+import { Prisma } from '@prisma/client';
 import { NotFoundError } from 'src/common/errors/types/NotFoundError';
 
 @Injectable()
@@ -28,7 +29,17 @@ export class VacationsService {
     return await this.repository.update(id, updateVacationDto);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} vacation`;
+  async remove(id: number): Promise<void> {
+    try {
+      await this.repository.remove(id);
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2025'
+      ) {
+        throw new NotFoundError(`User ${id} is not found`);
+      }
+      throw error;
+    }
   }
 }
