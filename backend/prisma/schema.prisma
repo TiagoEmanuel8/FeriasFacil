@@ -1,0 +1,47 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["debian-openssl-1.1.x"]
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Position {
+  id        Int      @id @default(autoincrement())
+  position  String
+  createdAt DateTime @default(now()) @updatedAt @map(name: "created_at")
+  users     User[]
+
+  @@map("position")
+}
+
+model User {
+  id         Int        @id @default(autoincrement()) @map(name: "id")
+  email      String     @unique
+  password   String
+  name       String
+  hireDate   DateTime   @map(name: "hire_date") @db.Date
+  position   Position   @relation(fields: [idPosition], references: [id])
+  idPosition Int        @map(name: "id_position")
+  type       String
+  createdAt  DateTime   @default(now()) @updatedAt @map(name: "created_at")
+  vacations  Vacation[]
+
+  @@map("user")
+}
+
+model Vacation {
+  id             Int      @id @default(autoincrement()) @map(name: "id")
+  vacationPeriod Int      @map(name: "vacation_period")
+  startVacation  DateTime @map(name: "start_vacation") @db.Date
+  endVacation    DateTime @map(name: "end_vacation") @db.Date
+  user           User     @relation(fields: [idUser], references: [id])
+  idUser         Int      @map(name: "id_user")
+  createdAt      DateTime @default(now()) @updatedAt @map(name: "created_at")
+
+  @@map("vacation")
+}
