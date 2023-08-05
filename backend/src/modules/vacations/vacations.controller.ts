@@ -35,17 +35,20 @@ export class VacationsController {
     return this.vacationsService.findOne(+id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Patch(':id')
   update(
     @Param('id') id: string,
     @Body() updateVacationDto: UpdateVacationDto,
+    @Req() request,
   ) {
-    return this.vacationsService.update(+id, updateVacationDto);
+    return this.vacationsService.update(+id, updateVacationDto, request.user);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   @HttpCode(204)
-  remove(@Param('id') id: string) {
-    return this.vacationsService.remove(+id);
+  remove(@Param('id') id: string, @Req() request) {
+    return this.vacationsService.remove(+id, request.user);
   }
 }

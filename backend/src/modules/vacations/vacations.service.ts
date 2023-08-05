@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { CreateVacationDto } from './dto/create-vacation.dto';
 import { UpdateVacationDto } from './dto/update-vacation.dto';
 import { VacationRepository } from './repositories/vacations.repository';
-import { Prisma } from '@prisma/client';
 import { NotFoundError } from 'src/common/errors/types/NotFoundError';
+import { UnauthorizedError } from 'src/common/errors/types/UnauthorizedError';
 
 @Injectable()
 export class VacationsService {
@@ -23,23 +23,25 @@ export class VacationsService {
     return user;
   }
 
-  async update(id: number, updateVacationDto: UpdateVacationDto) {
+  async update(id: number, updateVacationDto: UpdateVacationDto, userReq: any) {
+    if (userReq.id !== id) {
+      throw new UnauthorizedError(
+        'You are not authorized to update this vacation',
+      );
+    }
     const user = await this.repository.findOne(id);
     if (!user) throw new NotFoundError(`User ${id} is not found`);
     return await this.repository.update(id, updateVacationDto);
   }
 
-  async remove(id: number): Promise<void> {
-    try {
-      await this.repository.remove(id);
-    } catch (error) {
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === 'P2025'
-      ) {
-        throw new NotFoundError(`User ${id} is not found`);
-      }
-      throw error;
+  async remove(id: number, userReq: any): Promise<void> {
+    if (userReq.id !== id) {
+      throw new UnauthorizedError(
+        'You are not authorized to exclude this vacation',
+      );
     }
+    const vacation = await this.repository.findOne(id);
+    if (!vacation) throw new NotFoundError(`Vacation ${id} is not found`);
+    await this.repository.remove(id);
   }
 }
