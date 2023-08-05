@@ -3,7 +3,7 @@ import { IsDate, IsNotEmpty, IsNumber } from 'class-validator';
 
 export class CreateVacationDto {
   @IsNotEmpty()
-  @IsDate()
+  @IsNumber()
   vacationPeriod: number;
 
   @IsNotEmpty()

@@ -6,15 +6,19 @@ import {
   Patch,
   Param,
   Delete,
+  HttpCode,
+  UseGuards,
 } from '@nestjs/common';
 import { VacationsService } from './vacations.service';
 import { CreateVacationDto } from './dto/create-vacation.dto';
 import { UpdateVacationDto } from './dto/update-vacation.dto';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @Controller('vacations')
 export class VacationsController {
   constructor(private readonly vacationsService: VacationsService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Post()
   create(@Body() createVacationDto: CreateVacationDto) {
     return this.vacationsService.create(createVacationDto);
@@ -39,6 +43,7 @@ export class VacationsController {
   }
 
   @Delete(':id')
+  @HttpCode(204)
   remove(@Param('id') id: string) {
     return this.vacationsService.remove(+id);
   }

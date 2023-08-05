@@ -1,11 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { CreateVacationDto } from './dto/create-vacation.dto';
 import { UpdateVacationDto } from './dto/update-vacation.dto';
+import { VacationRepository } from './repositories/vacations.repository';
 
 @Injectable()
 export class VacationsService {
-  create(createVacationDto: CreateVacationDto) {
-    return 'This action adds a new vacation';
+  constructor(private readonly repository: VacationRepository) {}
+
+  async create(createVacationDto: CreateVacationDto) {
+    return await this.repository.create(createVacationDto);
   }
 
   findAll() {
