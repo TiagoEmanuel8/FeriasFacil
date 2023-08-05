@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateVacationDto } from './dto/create-vacation.dto';
 import { UpdateVacationDto } from './dto/update-vacation.dto';
 import { VacationRepository } from './repositories/vacations.repository';
+import { NotFoundError } from 'src/common/errors/types/NotFoundError';
 
 @Injectable()
 export class VacationsService {
@@ -15,8 +16,10 @@ export class VacationsService {
     return await this.repository.findAll();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} vacation`;
+  async findOne(id: number) {
+    const user = await this.repository.findOne(id);
+    if (!user) throw new NotFoundError(`User ${id} is not found`);
+    return user;
   }
 
   update(id: number, updateVacationDto: UpdateVacationDto) {
