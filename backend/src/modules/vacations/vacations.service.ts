@@ -22,8 +22,10 @@ export class VacationsService {
     return user;
   }
 
-  update(id: number, updateVacationDto: UpdateVacationDto) {
-    return `This action updates a #${id} vacation`;
+  async update(id: number, updateVacationDto: UpdateVacationDto) {
+    const user = await this.repository.findOne(id);
+    if (!user) throw new NotFoundError(`User ${id} is not found`);
+    return await this.repository.update(id, updateVacationDto);
   }
 
   remove(id: number) {
