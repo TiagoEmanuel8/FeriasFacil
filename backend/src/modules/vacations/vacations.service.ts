@@ -11,8 +11,8 @@ export class VacationsService {
     return await this.repository.create(createVacationDto);
   }
 
-  findAll() {
-    return `This action returns all vacations`;
+  async findAll() {
+    return await this.repository.findAll();
   }
 
   findOne(id: number) {
