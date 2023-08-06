@@ -13,12 +13,14 @@ import {
   FormLabel,
   Heading,
   Input,
+  Link,
   Stack,
   useColorModeValue,
   useToast,
+  Text
 } from '@chakra-ui/react';
 
-import { positionService } from '@/api/position';
+import { positionService } from '@/api/positionAPI';
 
 interface IPositionFormData {
   position: string;
@@ -72,7 +74,7 @@ export default function Position() {
     >
       <Stack spacing={8} mx={"auto"} maxW={"lg"} py={12} px={6}>
         <Stack align={"center"}>
-          <Heading fontSize={"4xl"}>Cadastrar novo cargo</Heading>
+          <Heading fontSize={"4xl"}>Cadastre um cargo</Heading>
         </Stack>
         <Box
           rounded={"lg"}
@@ -82,7 +84,7 @@ export default function Position() {
         >
           <form onSubmit={handleSubmit(onSubmit)}>
             <Stack spacing={4}>
-              <FormControl isInvalid={!!errors.position}>
+              <FormControl isInvalid={!!errors.position} isRequired>
                 <FormLabel>Cargo</FormLabel>
                 <Input
                   type="text"
@@ -110,6 +112,11 @@ export default function Position() {
               </Stack>
             </Stack>
           </form>
+            <Stack pt={6}>
+                <Text align={"center"}>
+                Voltar para <Link color={"blue.400"}>Dashboard</Link>
+                </Text>
+              </Stack>
         </Box>
       </Stack>
     </Flex>
