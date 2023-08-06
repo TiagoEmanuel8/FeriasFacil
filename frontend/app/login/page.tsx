@@ -13,10 +13,14 @@ import {
   Heading,
   Text,
   useColorModeValue,
+  InputGroup,
+  InputRightElement,
 } from "@chakra-ui/react"
+import { useState } from "react"
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
+import { ViewIcon, ViewOffIcon } from "@chakra-ui/icons";
 
 interface ILoginFormData {
   email: string,
@@ -31,6 +35,8 @@ const schema = yup.object({
 });
 
 export default function SimpleCard() {
+  const [showPassword, setShowPassword] = useState(false)
+
   const {
     register,
     handleSubmit,
@@ -77,16 +83,28 @@ export default function SimpleCard() {
               />
               <p style={{ color: 'red' }}>{errors?.email?.message}</p>
             </FormControl>
-            <FormControl id="password">
-              <FormLabel>Senha</FormLabel>
-              <Input
-                type="password"
-                outline='none'
-                focusBorderColor='gray.600'
-                placeholder='Digite seu email'
-                {...register('password')}
-              />
-            </FormControl>
+            <FormControl id="password" isRequired>
+                <FormLabel>Senha</FormLabel>
+                <InputGroup>
+                  <Input
+                    type={showPassword ? "text" : "password"}
+                    outline='none'
+                    focusBorderColor='gray.600'
+                    placeholder='exemplo@email.com'
+                    {...register('password')}
+                  />
+                  <InputRightElement h={"full"}>
+                    <Button
+                      variant={"ghost"}
+                      onClick={() =>
+                        setShowPassword((showPassword) => !showPassword)
+                      }
+                    >
+                      {showPassword ? <ViewIcon /> : <ViewOffIcon />}
+                    </Button>
+                  </InputRightElement>
+                </InputGroup>
+              </FormControl>
             <p style={{ color: 'red' }}>{errors?.password?.message}</p>
             <Stack spacing={10}>
               <Stack
