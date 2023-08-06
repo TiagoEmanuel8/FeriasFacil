@@ -1,51 +1,67 @@
 "use client"
 
-import {
-  Flex,
-  Box,
-  FormControl,
-  FormLabel,
-  Input,
-  Checkbox,
-  Stack,
-  Link,
-  Button,
-  Heading,
-  Text,
-  useColorModeValue,
-} from "@chakra-ui/react"
-import { yupResolver } from '@hookform/resolvers/yup';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
+import {
+  Box,
+  Button,
+  Flex,
+  FormControl,
+  FormErrorMessage,
+  FormLabel,
+  Heading,
+  Input,
+  Stack,
+  useColorModeValue,
+  useToast,
+} from '@chakra-ui/react';
+
+import { positionService } from '@/api/position';
 
 interface IPositionFormData {
-  cargo: string,
-  handleSubmit: () => void,
-  onSubmit: () => void,
+  position: string;
 }
 
 const schema = yup.object({
-  cargo: yup.string().required(),
+  position: yup.string().required('Campo obrigatório'),
 });
 
-{/* <h1>Essa tela terá um forms para cadastrar novos cargos dentro da empresa</h1>
-<p>caso sobre tempo fazer uma tabela abaixo mostrando todos os cargos da empresa, e ao lado os botões para editar, excluir e expandir</p> */}
 export default function Position() {
+  const [isLoading, setIsLoading] = useState(false);
+  const toast = useToast();
   const {
     register,
     handleSubmit,
-    formState: { errors }
+    formState: { errors },
   } = useForm<IPositionFormData>({
-    resolver: yupResolver(schema)
+    resolver: yupResolver(schema),
   });
 
-  function onSubmit(data: IPositionFormData) {
-    console.log(data)
-  }
-
-    function setErros(error: any) {
-  console.log('Errors', error)
-  }
+  const onSubmit = async (data: IPositionFormData) => {
+    setIsLoading(true);
+    try {
+      await positionService.createPosition(data);
+      toast({
+        title: "Sucesso",
+        description: "Cargo criado com sucesso",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Erro",
+        description: error.message,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <Flex
@@ -64,38 +80,38 @@ export default function Position() {
           boxShadow={"lg"}
           p={8}
         >
-          <form action="" autoComplete='off' onSubmit={handleSubmit(onSubmit, setErros)}>
-          <Stack spacing={4}>
-            <FormControl id="cargo">
-              <FormLabel>Cargo</FormLabel>
-              <Input
-                type="cargo"
-                outline='none'
-                focusBorderColor='gray.600'
-                placeholder='Digite o novo cargo'
-                {...register('cargo')}
-              />
-              <p style={{ color: 'red' }}>{errors?.cargo?.message}</p>
-            </FormControl>
-           
-            <Stack spacing={10}>
-             
-              <Button
-                type='submit'
-                width='full'
-                bg={"blue.400"}
-                color={"white"}
-                _hover={{
-                  bg: "blue.500",
-                }}
-              >
-                Criar novo cargo
-              </Button>
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <Stack spacing={4}>
+              <FormControl isInvalid={!!errors.position}>
+                <FormLabel>Cargo</FormLabel>
+                <Input
+                  type="text"
+                  placeholder='Digite o novo cargo'
+                  {...register('position')}
+                />
+                <FormErrorMessage>
+                  {errors.position?.message}
+                </FormErrorMessage>
+              </FormControl>
+
+              <Stack spacing={10}>
+                <Button
+                  type='submit'
+                  width='full'
+                  bg={"blue.400"}
+                  color={"white"}
+                  _hover={{
+                    bg: "blue.500",
+                  }}
+                  isLoading={isLoading}
+                >
+                  Criar novo cargo
+                </Button>
+              </Stack>
             </Stack>
-          </Stack>
           </form>
         </Box>
       </Stack>
     </Flex>
-  )
+  );
 }

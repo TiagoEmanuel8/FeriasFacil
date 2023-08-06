@@ -17,7 +17,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
 
-interface IUserFormData {
+interface IVacationFormData {
   vacationPeriod: number,
   startVacation: string,
   endVacation: string,
@@ -38,15 +38,15 @@ export default function Register() {
     register,
     handleSubmit,
     formState: { errors }
-  } = useForm<IUserFormData>({
+  } = useForm<IVacationFormData>({
     resolver: yupResolver(schema)
   });
 
-  function onSubmit(data: IUserFormData) {
+  function onSubmit(data: IVacationFormData) {
     console.log(data)
   }
 
-    function setErros(error: any) {
+  function setErros(error: any) {
   console.log('Errors', error)
   }
 
@@ -131,7 +131,12 @@ export default function Register() {
                   }}
                 >
                   Registrar Férias
-                </Button>
+                  </Button>
+              </Stack>
+              <Stack pt={6}>
+                <Text align={"center"}>
+                Visão geral de sua <Link color={"blue.400"}>Conta</Link>
+                </Text>
               </Stack>
             </Stack>
           </Box>

@@ -59,8 +59,8 @@ export default function Register() {
     console.log(data)
   }
 
-    function setErros(error: any) {
-  console.log('Errors', error)
+  function setErros(error: any) {
+    console.log('Errors', error)
   }
 
   return (
