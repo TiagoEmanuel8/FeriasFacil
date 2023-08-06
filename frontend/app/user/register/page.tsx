@@ -25,10 +25,13 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
 
-interface ILoginFormData {
+interface IUserFormData {
   fullName: string,
   email: string,
   password: string,
+  position: string,
+  hireDate: string,
+  type: string,
   handleSubmit: () => void,
   onSubmit: () => void,
 }
@@ -36,7 +39,10 @@ interface ILoginFormData {
 const schema = yup.object({
   fullName: yup.string().required(),
   email: yup.string().required(),
-  password: yup.string().required()
+  password: yup.string().required(),
+  position: yup.string().required(),
+  hireDate: yup.string().required(),
+  type: yup.string().required(),
 });
 
 export default function Register() {
@@ -45,11 +51,11 @@ export default function Register() {
     register,
     handleSubmit,
     formState: { errors }
-  } = useForm<ILoginFormData>({
+  } = useForm<IUserFormData>({
     resolver: yupResolver(schema)
   });
 
-  function onSubmit(data: ILoginFormData) {
+  function onSubmit(data: IUserFormData) {
     console.log(data)
   }
 
@@ -127,26 +133,41 @@ export default function Register() {
                 </InputGroup>
               </FormControl>
               <Box>
-                  <FormControl id="vacation" isRequired>
+                  <FormControl id="position" isRequired>
                     <FormLabel>Cargo</FormLabel>
-                    <Input type="text" />
+                    <Input
+                      type="text"
+                      outline='none'
+                      focusBorderColor='gray.600'
+                      {...register('position')}
+                    />
                   </FormControl>
                 </Box>
                 <Box>
                   <FormControl id="hireDate" isRequired>
                     <FormLabel>Data de Contratação</FormLabel>
-                    <Input type="date" />
+                    <Input
+                      type="date"
+                      outline='none'
+                      focusBorderColor='gray.600'
+                      {...register('hireDate')}
+                    />
                   </FormControl>
                 </Box>
                 <Box>
                   <FormControl id="type" isRequired>
                     <FormLabel>Tipo</FormLabel>
-                    <Input type="string" />
+                    <Input
+                      type="string"
+                      outline='none'
+                      focusBorderColor='gray.600'
+                      {...register('type')}
+                    />
                   </FormControl>
                 </Box>
               <Stack spacing={10} pt={2}>
                 <Button
-                  loadingText="Submitting"
+                  type='submit'
                   size="lg"
                   bg={"blue.400"}
                   color={"white"}
@@ -166,7 +187,6 @@ export default function Register() {
           </Box>
         </Stack>
       </form>
-
     </Flex>
   )
 }

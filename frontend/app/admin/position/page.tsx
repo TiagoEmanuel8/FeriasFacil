@@ -18,7 +18,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
 
-interface ILoginFormData {
+interface IPositionFormData {
   cargo: string,
   handleSubmit: () => void,
   onSubmit: () => void,
@@ -35,11 +35,11 @@ export default function Position() {
     register,
     handleSubmit,
     formState: { errors }
-  } = useForm<ILoginFormData>({
+  } = useForm<IPositionFormData>({
     resolver: yupResolver(schema)
   });
 
-  function onSubmit(data: ILoginFormData) {
+  function onSubmit(data: IPositionFormData) {
     console.log(data)
   }
 
