@@ -1,9 +1,4 @@
 "use client"
-
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
 import {
   Box,
   Button,
@@ -19,7 +14,10 @@ import {
   useToast,
   Text
 } from '@chakra-ui/react';
-
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
 import { positionService } from '@/api/positionAPI';
 
 interface IPositionFormData {
@@ -33,6 +31,7 @@ const schema = yup.object({
 export default function Position() {
   const [isLoading, setIsLoading] = useState(false);
   const toast = useToast();
+
   const {
     register,
     handleSubmit,

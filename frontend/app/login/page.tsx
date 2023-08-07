@@ -7,18 +7,22 @@ import {
   FormLabel,
   Input,
   Stack,
-  Link,
   Button,
   Heading,
   useColorModeValue,
   InputGroup,
   InputRightElement,
+  useToast,
+  FormErrorMessage
 } from "@chakra-ui/react"
 import { useState } from "react"
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import { ViewIcon, ViewOffIcon } from "@chakra-ui/icons";
+import { loginService } from '@/api/loginAPI';
+import router from 'next/router';
+import jwt from 'jsonwebtoken';
 
 interface ILoginFormData {
   email: string,
@@ -32,24 +36,53 @@ const schema = yup.object({
   password: yup.string().required(),
 });
 
-export default function SimpleCard() {
-  const [showPassword, setShowPassword] = useState(false)
-
+export default function LoginPage() {
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const toast = useToast();
+  
   const {
     register,
     handleSubmit,
-    formState: { errors }
+    formState: { errors },
   } = useForm<ILoginFormData>({
-    resolver: yupResolver(schema)
+    resolver: yupResolver(schema),
   });
 
-  function onSubmit(data: ILoginFormData) {
-    console.log(data)
-  }
+  const onSubmit = async (data: ILoginFormData) => {
+    setIsLoading(true);
+    try {
+      const token = await loginService.login(data);
 
-    function setErros(error: any) {
-  console.log('Errors', error)
-  }
+      localStorage.setItem('token', token);
+
+      const decodedToken: any = jwt.decode(token);     
+
+      if (decodedToken?.type === 'user') {
+        window.location.href = '/user/dashboard';
+      } else if (decodedToken?.type === 'adm') {
+        window.location.href = '/admin/dashboard';
+      }
+
+      toast({
+        title: "Sucesso",
+        description: "Sucesso",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Erro",
+        description: error.message,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <Flex
@@ -68,9 +101,9 @@ export default function SimpleCard() {
           boxShadow={"lg"}
           p={8}
         >
-          <form action="" autoComplete='off' onSubmit={handleSubmit(onSubmit, setErros)}>
+          <form onSubmit={handleSubmit(onSubmit)}>
           <Stack spacing={4}>
-            <FormControl id="email">
+          <FormControl isInvalid={!!errors.email} isRequired>
               <FormLabel>Email</FormLabel>
               <Input
                 type="email"
@@ -79,9 +112,12 @@ export default function SimpleCard() {
                 placeholder='Digite seu email'
                 {...register('email')}
               />
-              <p style={{ color: 'red' }}>{errors?.email?.message}</p>
+                <FormErrorMessage>
+                  {errors.email?.message}
+                </FormErrorMessage>
             </FormControl>
-            <FormControl id="password" isRequired>
+
+            <FormControl isInvalid={!!errors.password} isRequired>
                 <FormLabel>Senha</FormLabel>
                 <InputGroup>
                   <Input
@@ -103,15 +139,19 @@ export default function SimpleCard() {
                   </InputRightElement>
                 </InputGroup>
               </FormControl>
-            <p style={{ color: 'red' }}>{errors?.password?.message}</p>
+              <FormErrorMessage>
+                {errors.password?.message}
+              </FormErrorMessage>
+
             <Stack spacing={10}>
               <Stack
                 direction={{ base: "column", sm: "row" }}
                 align={"start"}
                 justify={"center"}
               >
-                {/* <Checkbox>Remember me</Checkbox> */}
-                <Link color={"blue.400"}>Criar Conta</Link>
+              <Button as="a" color={"blue.400"} href="/user/register" variant={"link"}>
+              Criar conta
+            </Button>
               </Stack>
               <Button
                 type='submit'
@@ -121,6 +161,7 @@ export default function SimpleCard() {
                 _hover={{
                   bg: "blue.500",
                 }}
+                isLoading={isLoading}
               >
                 Login
               </Button>
