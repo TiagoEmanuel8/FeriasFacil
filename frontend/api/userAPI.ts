@@ -42,7 +42,21 @@ const getUser = async (id: number) => {
   }
 };
 
+const getUsers = async () => {
+  try {
+    const response = await axios.get(API_URL);
+    return response.data;
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      const axiosError = error as AxiosError<ErrorResponse>;
+      throw new Error(axiosError.response?.data.message);
+    }
+    throw error;
+  }
+};
+
 export const userService = {
   createUser,
-  getUser
+  getUser,
+  getUsers
 };
