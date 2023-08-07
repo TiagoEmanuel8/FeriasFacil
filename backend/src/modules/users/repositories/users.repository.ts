@@ -14,7 +14,7 @@ interface IUserWithPosition extends User {
 export class UserRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  private mapUserToDto(user: IUserWithPosition): UserDto {
+  private mapUserToDto(user: any): any {
     return {
       id: user.id,
       email: user.email,
@@ -28,6 +28,12 @@ export class UserRepository {
             position: user.position.position,
           }
         : undefined,
+      vacations: user.vacations?.map((vacation) => ({
+        id: vacation.id,
+        vacationPeriod: vacation.vacationPeriod,
+        startVacation: vacation.startVacation.toISOString().split('T')[0],
+        endVacation: vacation.endVacation.toISOString().split('T')[0],
+      })),
     };
   }
 
@@ -49,7 +55,7 @@ export class UserRepository {
   async findOne(id: number): Promise<UserDto> {
     const user = await this.prisma.user.findUnique({
       where: { id },
-      include: { position: true },
+      include: { position: true, vacations: true },
     });
     if (!user) return null;
     return this.mapUserToDto(user);

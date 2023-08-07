@@ -15,7 +15,8 @@ import {
   useColorModeValue,
   useToast,
   FormErrorMessage,
-  Select
+  Select,
+  Link
 } from "@chakra-ui/react"
 import React, { useEffect, useState } from 'react';
 import { ViewIcon, ViewOffIcon } from "@chakra-ui/icons"
@@ -221,9 +222,7 @@ export default function Register() {
               </Stack>
               <Stack pt={6}>
                 <Text align={"center"}>
-                Possui conta?  <Button as="a" color={"blue.400"} href="/login" variant={"link"}>
-              Login
-            </Button>
+                Possui conta? <Link color={"blue.400"} href="/login">Login</Link>
                 </Text>
               </Stack>
             </Stack>
