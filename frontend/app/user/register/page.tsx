@@ -15,38 +15,49 @@ import {
   useColorModeValue,
   useToast,
   FormErrorMessage,
+  Select
 } from "@chakra-ui/react"
-import { useState } from "react"
+import React, { useEffect, useState } from 'react';
 import { ViewIcon, ViewOffIcon } from "@chakra-ui/icons"
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
+import { positionService } from '@/api/positionAPI';
 import { userService } from '@/api/userAPI';
 
 interface IUserFormData {
   email: string,
   password: string,
   name: string,
-  idPosition: number,
+  idPosition: number | string,
   hireDate: string,
   type: string,
   handleSubmit: () => void,
   onSubmit: () => void,
 }
 
+interface Position {
+  id: number;
+  position: string;
+  createdAt: string;
+}
+
 const schema = yup.object({
   email: yup.string().required('Campo obrigatório'),
   password: yup.string().required('Campo obrigatório'),
   name: yup.string().required('Campo obrigatório'),
-  idPosition: yup.number().required('Campo obrigatório'),
   hireDate: yup.string().required('Campo obrigatório'),
-  type: yup.string().required('Campo obrigatório'),
 });
 
 export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [positions, setPositions] = useState<Position[]>([]);
   const toast = useToast();
+
+  useEffect(() => {
+    positionService.getPositions().then(setPositions);
+  }, []);
 
   const {
     register,
@@ -60,6 +71,8 @@ export default function Register() {
     console.log(data);
     setIsLoading(true);
     try {
+      data.idPosition = positions.find(p => p.position === data.idPosition)?.id;
+      await userService.createUser(data);
       await userService.createUser(data);
       toast({
         title: "Sucesso",
@@ -141,7 +154,7 @@ export default function Register() {
                     type={showPassword ? "text" : "password"}
                     outline='none'
                     focusBorderColor='gray.600'
-                    placeholder='exemplo@email.com'
+                    placeholder='digite sua senha'
                     {...register('password')}
                   />
                   <InputRightElement h={"full"}>
@@ -162,12 +175,13 @@ export default function Register() {
               <Box>
                   <FormControl id="idPosition" isRequired>
                     <FormLabel>Cargo</FormLabel>
-                    <Input
-                      type="text"
-                      outline='none'
-                      focusBorderColor='gray.600'
-                      {...register('idPosition')}
-                    />
+                      <Select placeholder="Selecione o cargo" {...register('idPosition')}>
+                      {positions.map(pos => (
+                        <option key={pos.id} value={pos.position}>
+                          {pos.position}
+                        </option>
+                      ))}
+                    </Select>
                   </FormControl>
                 </Box>
                 <Box>
@@ -187,12 +201,10 @@ export default function Register() {
                 <Box>
                   <FormControl id="type" isRequired>
                     <FormLabel>Tipo</FormLabel>
-                    <Input
-                      type="string"
-                      outline='none'
-                      focusBorderColor='gray.600'
-                      {...register('type')}
-                    />
+                    <Select placeholder="Selecione o tipo" defaultValue="user" {...register('type')}>
+                      <option value="user">user</option>
+                      <option value="adm">adm</option>
+                  </Select>
                   </FormControl>
                 </Box>
               <Stack spacing={10} pt={2}>
