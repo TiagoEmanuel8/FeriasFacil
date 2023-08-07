@@ -10,7 +10,10 @@ import {
   Th,
   Td,
   Spinner,
-  Center
+  Center,
+  Stack,
+  Link,
+  Text
 } from '@chakra-ui/react';
 import { vacationService } from '@/api/vacationAPI';
 import moment from 'moment';
@@ -81,6 +84,11 @@ export default function AdminDashboard() {
           </Tbody>
         </Table>
       )}
+        <Stack pt={6}>
+          <Text align={"center"}>
+          Criar um novo <Link color={"blue.400"} href="/admin/position">Cargo</Link>
+          </Text>
+        </Stack>
     </Box>
   );
 }

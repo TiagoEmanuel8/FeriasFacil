@@ -112,10 +112,10 @@ export default function Position() {
             </Stack>
           </form>
             <Stack pt={6}>
-                <Text align={"center"}>
-                Voltar para <Link color={"blue.400"}>Dashboard</Link>
-                </Text>
-              </Stack>
+              <Text align={"center"}>
+              Voltar para <Link color={"blue.400"} href="/admin/dashboard">Dashboard</Link>
+              </Text>
+            </Stack>
         </Box>
       </Stack>
     </Flex>
