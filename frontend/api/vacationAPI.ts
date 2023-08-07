@@ -8,9 +8,11 @@ interface ErrorResponse {
 
 const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/vacations`;
 
-const createVacation = async (data: any) => {
+const createVacation = async (data: any, token: any) => {
   try {
-    const response = await axios.post(API_URL, data);
+    const response = await axios.post(API_URL, data, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
     return response.data;
   } catch (error: unknown) {
     if (error instanceof Error) {

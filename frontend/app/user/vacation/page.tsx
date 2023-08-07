@@ -22,25 +22,19 @@ import { vacationService } from '@/api/vacationAPI';
 import { userService } from '@/api/userAPI';
 import { useState, useEffect } from "react";
 import jwt from 'jsonwebtoken';
+import { addMonths, addDays, isAfter, isEqual, formatISO, setHours, startOfDay, format, subDays } from "date-fns";
 
 interface IVacationFormData {
   vacationPeriod: number,
-  startVacation: string,
-  endVacation: string,
+  startVacation: Date | string,
+  endVacation: Date | string,
   idUser: number,
-  handleSubmit: () => void,
-  onSubmit: () => void,
+  hireDate?: Date | string,
 }
-
-const schema = yup.object({
-  vacationPeriod: yup.number().required(),
-  startVacation: yup.string().required(),
-  endVacation: yup.string().required(),
-  idUser: yup.string().required(),
-});
 
 export default function Register() {
   const [isLoading, setIsLoading] = useState(false);
+  const [hireDate, setHireDate] = useState<Date | null>(null);
   const toast = useToast();
 
   useEffect(() => {
@@ -62,6 +56,7 @@ export default function Register() {
 
       try {
         const userData = await userService.getUser(id);
+        setHireDate(new Date(userData.hireDate));
         console.log(userData);
       } catch (error: any) {
         toast({
@@ -77,18 +72,55 @@ export default function Register() {
     getUserData();
   }, [toast, userService]);
 
+  const schema = yup.object().shape({
+    vacationPeriod: yup.number().required(),
+    startVacation: yup.date().required().test("startVacation", "A data de início das férias deve ser pelo menos 12 meses após a data de contratação", (value) => {
+      if (!value || !hireDate) return false;
+      const startVacationDate = startOfDay(value);
+      const hireDatePlus12Months = startOfDay(addMonths(hireDate, 12));
+      return isAfter(startVacationDate, hireDatePlus12Months);
+    }),
+    endVacation: yup.date().required().test("endVacation", "A data final das férias deve ser exatamente 30 dias após a data de início das férias", (value, context) => {
+      if (!value) return false;
+      const endVacationDate = startOfDay(value);
+      const startVacationPlus30Days = subDays(startOfDay(addDays(context.parent.startVacation, 30)), 1);
+      return isEqual(endVacationDate, startVacationPlus30Days);
+    }),
+    idUser: yup.number().required(),
+  });
+
   const {
     register,
     handleSubmit,
-    formState: { errors }
+    formState: { errors },
+    setValue,
+    watch,
   } = useForm<IVacationFormData>({
-    resolver: yupResolver(schema)
+    resolver: yupResolver(schema),
+    defaultValues: {
+      hireDate: hireDate || undefined,
+    },
   });
 
+  const startVacation: any = watch("startVacation");
+
+  useEffect(() => {
+    if (startVacation && !isNaN(Date.parse(startVacation))) {
+      const startVacationDate = new Date(startVacation);
+      const endVacationDate = addDays(startVacationDate, 30);
+      if (endVacationDate instanceof Date && !isNaN(endVacationDate.getTime())) {
+        setValue("endVacation", format(endVacationDate, 'yyyy-MM-dd'));
+      }
+    }
+  }, [startVacation, setValue]);
+
   const onSubmit = async (data: IVacationFormData) => {
+    const token = window.localStorage.getItem('token');
+    const { hireDate, ...requestData } = data;
+
     setIsLoading(true);
     try {
-      await vacationService.createVacation(data);
+      await vacationService.createVacation(requestData, token);
       toast({
         title: "Sucesso",
         description: "Férias cadastradas com sucesso",
@@ -117,16 +149,15 @@ export default function Register() {
       justify={"center"}
       bg={useColorModeValue("gray.50", "gray.800")}
     >
+      <Stack spacing={8} mx={'auto'} maxW={'lg'} py={12} px={6}>
+        <Stack align={'center'}>
+          <Heading fontSize={'4xl'}>Registrar férias</Heading>
+          <Text fontSize={'lg'} color={'gray.600'}>Preencha as informações abaixo para registrar suas férias</Text>
+        </Stack>
+        <Box rounded={'lg'} bg={useColorModeValue('white', 'gray.700')} boxShadow={'lg'} p={8}>
+          <Stack spacing={4}>
       <form action="" autoComplete='off' onSubmit={handleSubmit(onSubmit)}>
         <Stack spacing={8} mx={"auto"} maxW={"lg"} py={12} px={6}>
-          <Stack align={"center"}>
-            <Heading fontSize={"4xl"} textAlign={"center"}>
-              Planeje suas férias
-            </Heading>
-            <Text fontSize={"lg"} color={"gray.600"}>
-              Preencha o formulário e pronto!
-            </Text>
-          </Stack>
           <Box
             rounded={"lg"}
             bg={useColorModeValue("white", "gray.700")}
@@ -151,29 +182,29 @@ export default function Register() {
               </Box>
               <Box>
               <FormControl id="startVacation" isRequired>
-                    <FormLabel>Início das férias</FormLabel>
-                    <Input
-                      type="date"
-                      outline='none'
-                      focusBorderColor='gray.600'
-                      {...register('startVacation')}
-                    />
-                  <FormErrorMessage>
-                    {errors.startVacation?.message}
-                  </FormErrorMessage>
-                  </FormControl>
+                <FormLabel>Início das férias</FormLabel>
+                <Input
+                  type="date"
+                  outline='none'
+                  focusBorderColor='gray.600'
+                  {...register('startVacation', { valueAsDate: true })}
+                />
+                <FormErrorMessage>
+                  {errors.startVacation?.message}
+                </FormErrorMessage>
+              </FormControl>
                 </Box>
                 <Box>
-                  <FormControl id="endVacation" isRequired>
-                    <FormLabel>Final das férias</FormLabel>
-                    <Input
-                      type="date"
-                      outline='none'
-                      focusBorderColor='gray.600'
-                      {...register('endVacation')}
-                    />
+                <FormControl id="endVacation" isRequired>
+                  <FormLabel>Final das férias</FormLabel>
+                  <Input
+                    type="date"
+                    outline='none'
+                    focusBorderColor='gray.600'
+                    {...register('endVacation', { valueAsDate: true })}
+                  />
                     <FormErrorMessage>
-                      {errors.vacationPeriod?.message}
+                      {errors.endVacation?.message}
                     </FormErrorMessage>
                   </FormControl>
                 </Box>
@@ -193,13 +224,13 @@ export default function Register() {
                 </Box>
               <Stack spacing={10} pt={2}>
                 <Button
-                  type='submit'
-                  size="lg"
-                  bg={"blue.400"}
-                  color={"white"}
-                  _hover={{
-                    bg: "blue.500",
-                  }}
+                   bg={'blue.400'}
+                   color={'white'}
+                   _hover={{
+                     bg: 'blue.500',
+                   }}
+                   type="submit"
+                   isLoading={isLoading}
                 >
                   Registrar Férias
                   </Button>
@@ -215,6 +246,9 @@ export default function Register() {
           </Box>
         </Stack>
       </form>
+      </Stack>
+      </Box>
+      </Stack>
     </Flex>
   )
 }
