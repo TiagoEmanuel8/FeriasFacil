@@ -6,9 +6,9 @@ interface ErrorResponse {
   error: string;
 }
 
-const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/login`;
+const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/user`;
 
-const login = async (data: any) => {
+const createUser = async (data: any) => {
   try {
     const response = await axios.post(API_URL, data);
     return response.data;
@@ -17,15 +17,14 @@ const login = async (data: any) => {
       const axiosError = error as AxiosError<ErrorResponse>;
 
       if (axiosError.response && axiosError.response.status === 409) {
-        throw new Error('Email em uso');
+        throw new Error('Cargo já cadastrado');
       }
-
       throw new Error(axiosError.response?.data.message);
     }
     throw error;
   }
 };
 
-export const loginService = {
-  login,
+export const userService = {
+  createUser,
 };

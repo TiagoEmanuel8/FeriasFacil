@@ -32,8 +32,8 @@ interface ILoginFormData {
 }
 
 const schema = yup.object({
-  email: yup.string().required(),
-  password: yup.string().required(),
+  email: yup.string().required('Campo obrigatório'),
+  password: yup.string().required('Campo obrigatório'),
 });
 
 export default function LoginPage() {

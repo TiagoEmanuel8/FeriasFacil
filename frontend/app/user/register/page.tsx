@@ -1,9 +1,5 @@
 "use client"
 
-      {/* <h1>Formulário de cadastro de novos usuários no sistema</h1>
-      <p>Na tela de login, caso não tenha conta, o usuário será redirecionado para cá</p>
-      <p>haverá um forms para cadastro de novos usuários férias</p>
-      <p>após o submit, o usuário será redirecionado para tela de login</p> */}
 import {
   Flex,
   Box,
@@ -17,19 +13,21 @@ import {
   Heading,
   Text,
   useColorModeValue,
-  Link,
+  useToast,
+  FormErrorMessage,
 } from "@chakra-ui/react"
 import { useState } from "react"
 import { ViewIcon, ViewOffIcon } from "@chakra-ui/icons"
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
+import { userService } from '@/api/userAPI';
 
 interface IUserFormData {
-  fullName: string,
   email: string,
   password: string,
-  position: string,
+  name: string,
+  idPosition: number,
   hireDate: string,
   type: string,
   handleSubmit: () => void,
@@ -37,16 +35,19 @@ interface IUserFormData {
 }
 
 const schema = yup.object({
-  fullName: yup.string().required(),
-  email: yup.string().required(),
-  password: yup.string().required(),
-  position: yup.string().required(),
-  hireDate: yup.string().required(),
-  type: yup.string().required(),
+  email: yup.string().required('Campo obrigatório'),
+  password: yup.string().required('Campo obrigatório'),
+  name: yup.string().required('Campo obrigatório'),
+  idPosition: yup.number().required('Campo obrigatório'),
+  hireDate: yup.string().required('Campo obrigatório'),
+  type: yup.string().required('Campo obrigatório'),
 });
 
 export default function Register() {
-  const [showPassword, setShowPassword] = useState(false)
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const toast = useToast();
+
   const {
     register,
     handleSubmit,
@@ -55,13 +56,31 @@ export default function Register() {
     resolver: yupResolver(schema)
   });
 
-  function onSubmit(data: IUserFormData) {
-    console.log(data)
-  }
-
-  function setErros(error: any) {
-    console.log('Errors', error)
-  }
+  const onSubmit = async (data: IUserFormData) => {
+    console.log(data);
+    setIsLoading(true);
+    try {
+      await userService.createUser(data);
+      toast({
+        title: "Sucesso",
+        description: "Usuário criado com sucesso",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+      window.location.href = '/login';
+    } catch (error: any) {
+      toast({
+        title: "Erro",
+        description: error.message,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <Flex
@@ -70,7 +89,7 @@ export default function Register() {
       justify={"center"}
       bg={useColorModeValue("gray.50", "gray.800")}
     >
-      <form action="" autoComplete='off' onSubmit={handleSubmit(onSubmit, setErros)}>
+      <form action="" autoComplete='off' onSubmit={handleSubmit(onSubmit)}>
         <Stack spacing={8} mx={"auto"} maxW={"lg"} py={12} px={6}>
           <Stack align={"center"}>
             <Heading fontSize={"4xl"} textAlign={"center"}>
@@ -88,16 +107,18 @@ export default function Register() {
           >
             <Stack spacing={4}>
               <Box>
-                <FormControl id="fullName" isRequired>
+                <FormControl id="name" isRequired>
                   <FormLabel>Nome Completo</FormLabel>
                   <Input
                     type="text"
                     outline='none'
                     focusBorderColor='gray.600'
                     placeholder='Digite nome completo'
-                    {...register('fullName')}
+                    {...register('name')}
                   />
-                  <p style={{ color: 'red' }}>{errors?.fullName?.message}</p>
+                  <FormErrorMessage>
+                    {errors.name?.message}
+                </FormErrorMessage>
                 </FormControl>
               </Box>
               <FormControl id="email" isRequired>
@@ -109,6 +130,9 @@ export default function Register() {
                   placeholder='exemplo@email.com'
                   {...register('email')}
                 />
+                <FormErrorMessage>
+                    {errors.email?.message}
+                </FormErrorMessage>
               </FormControl>
               <FormControl id="password" isRequired>
                 <FormLabel>Senha</FormLabel>
@@ -131,15 +155,18 @@ export default function Register() {
                     </Button>
                   </InputRightElement>
                 </InputGroup>
+                <FormErrorMessage>
+                    {errors.password?.message}
+                </FormErrorMessage>
               </FormControl>
               <Box>
-                  <FormControl id="position" isRequired>
+                  <FormControl id="idPosition" isRequired>
                     <FormLabel>Cargo</FormLabel>
                     <Input
                       type="text"
                       outline='none'
                       focusBorderColor='gray.600'
-                      {...register('position')}
+                      {...register('idPosition')}
                     />
                   </FormControl>
                 </Box>
@@ -152,6 +179,9 @@ export default function Register() {
                       focusBorderColor='gray.600'
                       {...register('hireDate')}
                     />
+                    <FormErrorMessage>
+                      {errors.hireDate?.message}
+                    </FormErrorMessage>
                   </FormControl>
                 </Box>
                 <Box>
@@ -174,13 +204,16 @@ export default function Register() {
                   _hover={{
                     bg: "blue.500",
                   }}
+                  isLoading={isLoading}
                 >
                   Cadastrar
                 </Button>
               </Stack>
               <Stack pt={6}>
                 <Text align={"center"}>
-                Possui conta? <Link color={"blue.400"}>Login</Link>
+                Possui conta?  <Button as="a" color={"blue.400"} href="/login" variant={"link"}>
+              Login
+            </Button>
                 </Text>
               </Stack>
             </Stack>
