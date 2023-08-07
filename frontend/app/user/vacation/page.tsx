@@ -12,10 +12,16 @@ import {
   Text,
   useColorModeValue,
   Link,
+  useToast,
+  FormErrorMessage,
 } from "@chakra-ui/react"
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
+import { vacationService } from '@/api/vacationAPI';
+import { userService } from '@/api/userAPI';
+import { useState, useEffect } from "react";
+import jwt from 'jsonwebtoken';
 
 interface IVacationFormData {
   vacationPeriod: number,
@@ -34,6 +40,43 @@ const schema = yup.object({
 });
 
 export default function Register() {
+  const [isLoading, setIsLoading] = useState(false);
+  const toast = useToast();
+
+  useEffect(() => {
+    const getUserData = async () => {
+      const token = window.localStorage.getItem('token');
+      if (!token) {
+        toast({
+          title: "Erro",
+          description: "Você precisa estar logado para acessar essa página",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
+        return;
+      }
+
+      const decodedToken: any = jwt.decode(token);
+      const id = decodedToken.id;
+
+      try {
+        const userData = await userService.getUser(id);
+        console.log(userData);
+      } catch (error: any) {
+        toast({
+          title: "Erro",
+          description: error.message,
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
+      }
+    };
+
+    getUserData();
+  }, [toast, userService]);
+
   const {
     register,
     handleSubmit,
@@ -42,13 +85,30 @@ export default function Register() {
     resolver: yupResolver(schema)
   });
 
-  function onSubmit(data: IVacationFormData) {
-    console.log(data)
-  }
-
-  function setErros(error: any) {
-  console.log('Errors', error)
-  }
+  const onSubmit = async (data: IVacationFormData) => {
+    setIsLoading(true);
+    try {
+      await vacationService.createVacation(data);
+      toast({
+        title: "Sucesso",
+        description: "Férias cadastradas com sucesso",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+      window.location.href = '/user/dashboard';
+    } catch (error: any) {
+      toast({
+        title: "Erro",
+        description: error.message,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <Flex
@@ -57,7 +117,7 @@ export default function Register() {
       justify={"center"}
       bg={useColorModeValue("gray.50", "gray.800")}
     >
-      <form action="" autoComplete='off' onSubmit={handleSubmit(onSubmit, setErros)}>
+      <form action="" autoComplete='off' onSubmit={handleSubmit(onSubmit)}>
         <Stack spacing={8} mx={"auto"} maxW={"lg"} py={12} px={6}>
           <Stack align={"center"}>
             <Heading fontSize={"4xl"} textAlign={"center"}>
@@ -84,7 +144,9 @@ export default function Register() {
                     placeholder='Digite quantidade de dias'
                     {...register('vacationPeriod')}
                   />
-                  <p style={{ color: 'red' }}>{errors?.vacationPeriod?.message}</p>
+                   <FormErrorMessage>
+                    {errors.vacationPeriod?.message}
+                  </FormErrorMessage>
                 </FormControl>
               </Box>
               <Box>
@@ -96,6 +158,9 @@ export default function Register() {
                       focusBorderColor='gray.600'
                       {...register('startVacation')}
                     />
+                  <FormErrorMessage>
+                    {errors.startVacation?.message}
+                  </FormErrorMessage>
                   </FormControl>
                 </Box>
                 <Box>
@@ -107,6 +172,9 @@ export default function Register() {
                       focusBorderColor='gray.600'
                       {...register('endVacation')}
                     />
+                    <FormErrorMessage>
+                      {errors.vacationPeriod?.message}
+                    </FormErrorMessage>
                   </FormControl>
                 </Box>
                 <Box>
@@ -118,6 +186,9 @@ export default function Register() {
                       focusBorderColor='gray.600'
                       {...register('idUser')}
                     />
+                    <FormErrorMessage>
+                      {errors.idUser?.message}
+                    </FormErrorMessage>
                   </FormControl>
                 </Box>
               <Stack spacing={10} pt={2}>
@@ -134,8 +205,10 @@ export default function Register() {
                   </Button>
               </Stack>
               <Stack pt={6}>
-                <Text align={"center"}>
-                Visão geral de sua <Link color={"blue.400"}>Conta</Link>
+              <Text align={"center"}>
+                Voltar para sua  <Button as="a" color={"blue.400"} href="/login" variant={"link"}>
+              Conta
+            </Button>
                 </Text>
               </Stack>
             </Stack>

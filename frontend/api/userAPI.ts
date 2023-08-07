@@ -25,6 +25,24 @@ const createUser = async (data: any) => {
   }
 };
 
+const getUser = async (id: number) => {
+  try {
+    const response = await axios.get(`${API_URL}/${id}`);
+    return response.data;
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      const axiosError = error as AxiosError<ErrorResponse>;
+
+      // if (axiosError.response && axiosError.response.status === 409) {
+      //   throw new Error('Usuário não encontrado');
+      // }
+      throw new Error(axiosError.response?.data.message);
+    }
+    throw error;
+  }
+};
+
 export const userService = {
   createUser,
+  getUser
 };

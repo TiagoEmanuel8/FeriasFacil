@@ -68,11 +68,9 @@ export default function Register() {
   });
 
   const onSubmit = async (data: IUserFormData) => {
-    console.log(data);
     setIsLoading(true);
     try {
       data.idPosition = positions.find(p => p.position === data.idPosition)?.id;
-      await userService.createUser(data);
       await userService.createUser(data);
       toast({
         title: "Sucesso",

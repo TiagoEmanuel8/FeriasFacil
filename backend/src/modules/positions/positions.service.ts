@@ -1,4 +1,4 @@
-import { ConflictError } from 'src/common/errors/types/ConflictError';
+// import { ConflictError } from 'src/common/errors/types/ConflictError';
 import { NotFoundError } from 'src/common/errors/types/NotFoundError';
 import { Injectable } from '@nestjs/common';
 import { CreatePositionDto } from './dto/create-position.dto';
@@ -10,9 +10,9 @@ export class PositionsService {
   constructor(private readonly repository: PositionRepository) {}
 
   async create(createPositionDto: CreatePositionDto) {
-    const { position } = createPositionDto;
-    const verifyPosition = await this.repository.verifyExisteField(position);
-    if (verifyPosition) throw new ConflictError('position already exists');
+    // const { position } = createPositionDto;
+    // const verifyPosition = await this.repository.verifyExisteField(position);
+    // if (verifyPosition) throw new ConflictError('position already exists');
 
     return await this.repository.create(createPositionDto);
   }
