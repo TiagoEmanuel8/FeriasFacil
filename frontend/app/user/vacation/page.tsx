@@ -140,7 +140,7 @@ export default function Register() {
     console.log(requestData)
     setIsLoading(true);
       try {
-        // await vacationService.createVacation(requestData, token);
+        await vacationService.createVacation(requestData, token);
         toast({
           title: "Sucesso",
           description: "Férias cadastradas com sucesso",
