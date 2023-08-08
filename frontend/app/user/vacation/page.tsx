@@ -11,18 +11,28 @@ import {
   Heading,
   Text,
   useColorModeValue,
-  Link,
   useToast,
   FormErrorMessage,
-} from "@chakra-ui/react"
-import { yupResolver } from '@hookform/resolvers/yup';
+} from "@chakra-ui/react";
 import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
+import { useState, useEffect, Fragment } from "react";
+import jwt from 'jsonwebtoken';
+import {
+  addMonths,
+  addDays,
+  isAfter,
+  isEqual,
+  formatISO,
+  setHours,
+  startOfDay,
+  format,
+  subDays
+} from "date-fns";
+
 import { vacationService } from '@/api/vacationAPI';
 import { userService } from '@/api/userAPI';
-import { useState, useEffect } from "react";
-import jwt from 'jsonwebtoken';
-import { addMonths, addDays, isAfter, isEqual, formatISO, setHours, startOfDay, format, subDays } from "date-fns";
 
 interface IVacationFormData {
   vacationPeriod: number,
@@ -35,11 +45,15 @@ interface IVacationFormData {
 export default function Register() {
   const [isLoading, setIsLoading] = useState(false);
   const [hireDate, setHireDate] = useState<Date | null>(null);
+  const [vacationFields, setVacationFields] = useState([{ id: 1 }]);
+  
   const toast = useToast();
+  const token: any = window.localStorage.getItem('token');
+  const decodedToken: any = jwt.decode(token);
+  const id = decodedToken.id;
 
   useEffect(() => {
-    const getUserData = async () => {
-      const token = window.localStorage.getItem('token');
+    async function getUserData() {
       if (!token) {
         toast({
           title: "Erro",
@@ -51,13 +65,9 @@ export default function Register() {
         return;
       }
 
-      const decodedToken: any = jwt.decode(token);
-      const id = decodedToken.id;
-
       try {
         const userData = await userService.getUser(id);
         setHireDate(new Date(userData.hireDate));
-        console.log(userData);
       } catch (error: any) {
         toast({
           title: "Erro",
@@ -67,26 +77,30 @@ export default function Register() {
           isClosable: true,
         });
       }
-    };
+    }
 
     getUserData();
   }, [toast, userService]);
 
   const schema = yup.object().shape({
-    vacationPeriod: yup.number().required(),
-    startVacation: yup.date().required().test("startVacation", "A data de início das férias deve ser pelo menos 12 meses após a data de contratação", (value) => {
-      if (!value || !hireDate) return false;
-      const startVacationDate = startOfDay(value);
-      const hireDatePlus12Months = startOfDay(addMonths(hireDate, 12));
-      return isAfter(startVacationDate, hireDatePlus12Months);
-    }),
-    endVacation: yup.date().required().test("endVacation", "A data final das férias deve ser exatamente 30 dias após a data de início das férias", (value, context) => {
-      if (!value) return false;
-      const endVacationDate = startOfDay(value);
-      const startVacationPlus30Days = subDays(startOfDay(addDays(context.parent.startVacation, 30)), 1);
-      return isEqual(endVacationDate, startVacationPlus30Days);
-    }),
-    idUser: yup.number().required(),
+    // vacationPeriod: yup.number()
+    // .min(5, "Escolha um valor entre 5 e 30 dias")
+    // .max(30, "Escolha um valor entre 5 e 30 dias")
+    // .test("validVacationPeriod", "Escolha valores entre 5 e 25", value => {
+    //   return value !== undefined && ![26, 27, 28, 29].includes(value);
+    // }),
+    // startVacation: yup.date().required().test("startVacation", "A data de início das férias deve ser pelo menos 12 meses após a data de contratação", (value) => {
+    //   if (!value || !hireDate) return false;
+    //   const startVacationDate = startOfDay(value);
+    //   const hireDatePlus12Months = startOfDay(addMonths(hireDate, 12));
+    //   return isAfter(startVacationDate, hireDatePlus12Months);
+    // }),
+    // endVacation: yup.date().required().test("endVacation", `Altere o campo período férias`, (value, context) => {
+    //   if (!value || !context.parent.startVacation || !context.parent.vacationPeriod) return false;
+    //   const endVacationDate = startOfDay(value);
+    //   const startVacationPlusNDays = subDays(startOfDay(addDays(new Date(context.parent.startVacation), context.parent.vacationPeriod)), 1);
+    //   return isEqual(endVacationDate, startVacationPlusNDays);
+    // }),
   });
 
   const {
@@ -103,44 +117,50 @@ export default function Register() {
   });
 
   const startVacation: any = watch("startVacation");
+  const vacationPeriod: any = watch("vacationPeriod");
 
   useEffect(() => {
-    if (startVacation && !isNaN(Date.parse(startVacation))) {
+    if (startVacation && !isNaN(Date.parse(startVacation)) && vacationPeriod) {
       const startVacationDate = new Date(startVacation);
-      const endVacationDate = addDays(startVacationDate, 30);
+      const endVacationDate = addDays(startVacationDate, vacationPeriod);
+      
       if (endVacationDate instanceof Date && !isNaN(endVacationDate.getTime())) {
         setValue("endVacation", format(endVacationDate, 'yyyy-MM-dd'));
       }
     }
-  }, [startVacation, setValue]);
+  }, [startVacation, setValue, vacationPeriod]);
 
   const onSubmit = async (data: IVacationFormData) => {
-    const token = window.localStorage.getItem('token');
+    const decodedToken: any = jwt.decode(token);
+    const idUser = decodedToken.id;
+    
     const { hireDate, ...requestData } = data;
+    requestData.idUser = idUser;
 
+    console.log(requestData)
     setIsLoading(true);
-    try {
-      await vacationService.createVacation(requestData, token);
-      toast({
-        title: "Sucesso",
-        description: "Férias cadastradas com sucesso",
-        status: "success",
-        duration: 5000,
-        isClosable: true,
-      });
-      window.location.href = '/user/dashboard';
-    } catch (error: any) {
-      toast({
-        title: "Erro",
-        description: error.message,
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+      try {
+        // await vacationService.createVacation(requestData, token);
+        toast({
+          title: "Sucesso",
+          description: "Férias cadastradas com sucesso",
+          status: "success",
+          duration: 5000,
+          isClosable: true,
+        });
+        // window.location.href = '/user/dashboard';
+      } catch (error: any) {
+        toast({
+          title: "Erro",
+          description: error.message,
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
   return (
     <Flex
@@ -166,62 +186,43 @@ export default function Register() {
           >
             <Stack spacing={4}>
               <Box>
-                <FormControl id="vacationPeriod" isRequired>
-                  <FormLabel>Período férias</FormLabel>
-                  <Input
-                    type="number"
-                    outline='none'
-                    focusBorderColor='gray.600'
-                    placeholder='Digite quantidade de dias'
-                    {...register('vacationPeriod')}
-                  />
-                   <FormErrorMessage>
-                    {errors.vacationPeriod?.message}
-                  </FormErrorMessage>
-                </FormControl>
-              </Box>
-              <Box>
-              <FormControl id="startVacation" isRequired>
-                <FormLabel>Início das férias</FormLabel>
-                <Input
-                  type="date"
-                  outline='none'
-                  focusBorderColor='gray.600'
-                  {...register('startVacation', { valueAsDate: true })}
-                />
-                <FormErrorMessage>
-                  {errors.startVacation?.message}
-                </FormErrorMessage>
-              </FormControl>
-                </Box>
-                <Box>
-                <FormControl id="endVacation" isRequired>
-                  <FormLabel>Final das férias</FormLabel>
-                  <Input
-                    type="date"
-                    outline='none'
-                    focusBorderColor='gray.600'
-                    {...register('endVacation', { valueAsDate: true })}
-                  />
-                    <FormErrorMessage>
-                      {errors.endVacation?.message}
-                    </FormErrorMessage>
-                  </FormControl>
-                </Box>
-                <Box>
-                  <FormControl id="idUser" isRequired>
-                    <FormLabel>Id de usuário</FormLabel>
+              {vacationFields.map((field, index) => (
+                <Fragment key={field.id}>
+                  <FormControl id="vacationPeriod" isRequired>
+                    <FormLabel>Período de férias</FormLabel>
                     <Input
-                      type="string"
-                      outline='none'
-                      focusBorderColor='gray.600'
-                      {...register('idUser')}
+                      type="number"
+                      placeholder="Digite a quantidade de dias"
+                      {...register(`vacationPeriod${field.id}`)}
                     />
-                    <FormErrorMessage>
-                      {errors.idUser?.message}
-                    </FormErrorMessage>
                   </FormControl>
-                </Box>
+                  
+                  <FormControl id="startVacation" isRequired>
+                    <FormLabel>Início das férias</FormLabel>
+                    <Input
+                      type="date"
+                      {...register(`startVacation${field.id}`, { valueAsDate: true })}
+                    />
+                  </FormControl>
+                  
+                  <FormControl id="endVacation">
+                    <FormLabel>Final das férias</FormLabel>
+                    <Input
+                      type="date"
+                      {...register(`endVacation${field.id}`, { valueAsDate: true })}
+                    />
+                  </FormControl>
+                </Fragment>
+              ))}
+          </Box>
+              {vacationFields.length < 3 && (
+                <Button onClick={() => {
+                  const newFieldId = vacationFields.length + 1;
+                  setVacationFields(prevFields => [...prevFields, { id: newFieldId }]);
+                }}>
+                  Adicionar mais férias
+                </Button>
+              )}
               <Stack spacing={10} pt={2}>
                 <Button
                    bg={'blue.400'}
