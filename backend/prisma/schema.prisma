@@ -36,9 +36,9 @@ model User {
 
 model Vacation {
   id             Int      @id @default(autoincrement()) @map(name: "id")
-  vacationPeriod Int      @map(name: "vacation_period")
-  startVacation  DateTime @map(name: "start_vacation") @db.Date
-  endVacation    DateTime @map(name: "end_vacation") @db.Date
+  vacationPeriod Int      @map(name: "vacation_period1")
+  startVacation  DateTime @map(name: "start_vacation1") @db.Date
+  endVacation    DateTime @map(name: "end_vacation1") @db.Date
   user           User     @relation(fields: [idUser], references: [id])
   idUser         Int      @map(name: "id_user")
   createdAt      DateTime @default(now()) @updatedAt @map(name: "created_at")

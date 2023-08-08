@@ -31,6 +31,6 @@ export class LoginService {
     const payload = { id: user.id, type: user.type };
     const token = this.jwtService.sign(payload);
 
-    return token;
+    return JSON.stringify(token);
   }
 }

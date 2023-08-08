@@ -25,9 +25,9 @@ CREATE TABLE `user` (
 -- CreateTable
 CREATE TABLE `vacation` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `vacation_period` INTEGER NOT NULL,
-    `start_vacation` DATE NOT NULL,
-    `end_vacation` DATE NOT NULL,
+    `vacation_period1` INTEGER NOT NULL,
+    `start_vacation1` DATE NOT NULL,
+    `end_vacation1` DATE NOT NULL,
     `id_user` INTEGER NOT NULL,
     `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
 
