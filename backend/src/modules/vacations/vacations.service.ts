@@ -10,7 +10,17 @@ export class VacationsService {
   constructor(private readonly repository: VacationRepository) {}
 
   async create(createVacationDto: CreateVacationDto) {
-    return await this.repository.create(createVacationDto);
+    const vacationsToCreate = createVacationDto.vacations.map((vacation) => ({
+      ...vacation,
+      idUser: createVacationDto.idUser,
+    }));
+
+    // implementar validações para as datas .. o frontend apenas vai mandar as datas para o backend, o backend vai fazer as validações
+
+    return await this.repository.createMultipleVacations({
+      idUser: createVacationDto.idUser,
+      vacations: vacationsToCreate,
+    });
   }
 
   async findAll() {

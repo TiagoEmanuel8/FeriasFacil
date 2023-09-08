@@ -8,6 +8,7 @@ import { PositionRepository } from './repositories/position.repository';
 @Injectable()
 export class PositionsService {
   constructor(private readonly repository: PositionRepository) {}
+  // deixar todas as regras de negócio aqui
 
   async create(createPositionDto: CreatePositionDto) {
     // const { position } = createPositionDto;

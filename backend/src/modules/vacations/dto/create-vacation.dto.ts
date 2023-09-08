@@ -1,7 +1,13 @@
 import { Type } from 'class-transformer';
-import { IsDate, IsNotEmpty, IsNumber } from 'class-validator';
+import {
+  IsDate,
+  IsNotEmpty,
+  IsNumber,
+  ArrayNotEmpty,
+  ValidateNested,
+} from 'class-validator';
 
-export class CreateVacationDto {
+export class SingleVacationDto {
   @IsNotEmpty()
   @IsNumber()
   vacationPeriod: number;
@@ -15,8 +21,15 @@ export class CreateVacationDto {
   @IsDate()
   @Type(() => Date)
   endVacation: Date;
+}
 
+export class CreateVacationDto {
   @IsNotEmpty()
   @IsNumber()
   idUser: number;
+
+  @ArrayNotEmpty()
+  @ValidateNested({ each: true })
+  @Type(() => SingleVacationDto)
+  vacations: SingleVacationDto[];
 }

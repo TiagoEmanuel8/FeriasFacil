@@ -13,6 +13,7 @@ export class UsersService {
     private readonly repository: UserRepository,
     private readonly passwordHashService: PasswordHashService,
   ) {}
+  // deixar todas as regras de negócio aqui
 
   async create(createUserDto: CreateUserDto) {
     const { email, password } = createUserDto;

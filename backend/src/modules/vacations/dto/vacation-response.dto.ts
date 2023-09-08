@@ -1,9 +1,13 @@
-export class VacationDto {
+export class SingleVacationDto {
   id: number;
   vacationPeriod: number;
   startVacation: string;
   endVacation: string;
+}
+
+export class VacationDto {
   idUser: number;
+  vacations: SingleVacationDto[];
   user?: UserExistDto;
 }
 

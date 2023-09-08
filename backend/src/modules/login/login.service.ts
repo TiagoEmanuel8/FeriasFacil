@@ -31,6 +31,9 @@ export class LoginService {
     const payload = { id: user.id, type: user.type };
     const token = this.jwtService.sign(payload);
 
+    // fazer tratamento de autenticação totalmente aqui ... retirar do frontend essa parte e jogar aqui
+    // deixar todas as regras de negócio aqui
+
     return JSON.stringify(token);
   }
 }

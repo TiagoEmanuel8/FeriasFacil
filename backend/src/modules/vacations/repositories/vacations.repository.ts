@@ -1,9 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../database/prisma.service';
 import { CreateVacationDto } from '../dto/create-vacation.dto';
-import { VacationDto, UserExistDto } from '../dto/vacation-response.dto';
+import { UserExistDto } from '../dto/vacation-response.dto';
 import { UpdateVacationDto } from '../dto/update-vacation.dto';
-// import { VacationEntity } from '../entities/vacation.entity';
 import { Vacation } from '@prisma/client';
 
 interface IVacationWithPosition extends Vacation {
@@ -14,7 +13,7 @@ interface IVacationWithPosition extends Vacation {
 export class VacationRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  private mapVacationToDto(vacation: IVacationWithPosition): VacationDto {
+  private mapVacationToDto(vacation: IVacationWithPosition) {
     return {
       id: vacation.id,
       vacationPeriod: vacation.vacationPeriod,
@@ -35,22 +34,39 @@ export class VacationRepository {
     };
   }
 
-  async create(createVacationDto: CreateVacationDto): Promise<VacationDto> {
-    const newVacation = await this.prisma.vacation.create({
-      data: createVacationDto,
+  async createMultipleVacations(createVacationDto: CreateVacationDto) {
+    const { idUser, vacations } = createVacationDto;
+
+    const vacationData = vacations.map((vacation) => ({
+      ...vacation,
+      idUser,
+    }));
+
+    await this.prisma.vacation.createMany({
+      data: vacationData,
+      skipDuplicates: true,
+    });
+
+    const startDates = vacations.map((v) => v.startVacation);
+    const createdVacations = await this.prisma.vacation.findMany({
+      where: {
+        idUser,
+        startVacation: { in: startDates },
+      },
       include: { user: true },
     });
-    return this.mapVacationToDto(newVacation);
+
+    return createdVacations.map(this.mapVacationToDto);
   }
 
-  async findAll(): Promise<VacationDto[]> {
+  async findAll() {
     const vacations = await this.prisma.vacation.findMany({
       include: { user: true },
     });
     return vacations.map(this.mapVacationToDto);
   }
 
-  async findOne(id: number): Promise<VacationDto> {
+  async findOne(id: number) {
     const vacation = await this.prisma.vacation.findUnique({
       where: { id },
       include: { user: true },
@@ -67,10 +83,7 @@ export class VacationRepository {
   //   });
   // }
 
-  async update(
-    id: number,
-    updateVacationDto: UpdateVacationDto,
-  ): Promise<VacationDto> {
+  async update(id: number, updateVacationDto: UpdateVacationDto) {
     await this.prisma.vacation.update({
       where: {
         id,
