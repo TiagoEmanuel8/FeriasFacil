@@ -43,9 +43,9 @@ export default function LoginPage() {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<ILoginFormData>({
+} = useForm<ILoginFormData>({
     resolver: yupResolver(schema),
-  });
+});
 
   const onSubmit = async (data: ILoginFormData) => {
     setIsLoading(true);
