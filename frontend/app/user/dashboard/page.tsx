@@ -30,22 +30,27 @@ interface Token {
 export default function UserDashboard() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [token, setToken] = useState<string | null>(null);
 
-  const token: any = window.localStorage.getItem('token');
   useEffect(() => {
-  const decodedToken: any = jwt.decode(token);
-    const fetchData = async () => {
-      try {
-        const data = await userService.getUser(decodedToken.id);
-        setUser(data);
-        setLoading(false);
-      } catch (err) {
-        console.error(err);
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, [token]);
+    const storedToken = window.localStorage.getItem('token');
+    setToken(storedToken);
+
+    if (storedToken) {
+      const decodedToken: any = jwt.decode(storedToken);
+      const fetchData = async () => {
+        try {
+          const data = await userService.getUser(decodedToken.id);
+          setUser(data);
+          setLoading(false);
+        } catch (err) {
+          console.error(err);
+          setLoading(false);
+        }
+      };
+      fetchData();
+    }
+  }, []);
 
   if (loading) {
     return (
