@@ -43,7 +43,7 @@ interface Position {
   createdAt: string;
 }
 
-const schema = yup.object({
+const schema: any = yup.object({
   email: yup.string().required('Campo obrigatório'),
   password: yup.string().required('Campo obrigatório'),
   name: yup.string().required('Campo obrigatório'),
@@ -71,7 +71,11 @@ export default function Register() {
   const onSubmit = async (data: IUserFormData) => {
     setIsLoading(true);
     try {
-      data.idPosition = positions.find(p => p.position === data.idPosition)?.id;
+      const positionMatch = positions.find(p => p.position === data.idPosition);
+      if (positionMatch) {
+          data.idPosition = positionMatch.id;
+      }
+
       await userService.createUser(data);
       toast({
         title: "Sucesso",
@@ -80,7 +84,7 @@ export default function Register() {
         duration: 5000,
         isClosable: true,
       });
-      window.location.href = '/login';
+      window.location.href = '/';
     } catch (error: any) {
       toast({
         title: "Erro",
@@ -222,7 +226,7 @@ export default function Register() {
               </Stack>
               <Stack pt={6}>
                 <Text align={"center"}>
-                Possui conta? <Link color={"blue.400"} href="/login">Login</Link>
+                Possui conta? <Link color={"blue.400"} href="/">Login</Link>
                 </Text>
               </Stack>
             </Stack>

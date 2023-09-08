@@ -27,11 +27,9 @@ import jwt from 'jsonwebtoken';
 interface ILoginFormData {
   email: string,
   password: string,
-  handleSubmit: () => void,
-  onSubmit: () => void,
 }
 
-const schema = yup.object({
+const schema: any = yup.object({
   email: yup.string().required('Campo obrigatório'),
   password: yup.string().required('Campo obrigatório'),
 });

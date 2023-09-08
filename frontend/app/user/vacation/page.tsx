@@ -12,45 +12,27 @@ import {
   Text,
   useColorModeValue,
   useToast,
-  FormErrorMessage,
 } from "@chakra-ui/react";
-import { useForm } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
-import { useState, useEffect, Fragment } from "react";
-import jwt from 'jsonwebtoken';
-import {
-  addMonths,
-  addDays,
-  isAfter,
-  isEqual,
-  formatISO,
-  setHours,
-  startOfDay,
-  format,
-  subDays
-} from "date-fns";
-
+import { useState, useEffect, Fragment, useCallback } from "react";
+import jwt, { JwtPayload } from 'jsonwebtoken';
+import { format } from 'date-fns';
 import { vacationService } from '@/api/vacationAPI';
 import { userService } from '@/api/userAPI';
 
-interface IVacationFormData {
-  vacationPeriod: number,
-  startVacation: Date | string,
-  endVacation: Date | string,
-  idUser: number,
-  hireDate?: Date | string,
-}
+type DecodedJwt = { id?: number } & JwtPayload;
 
 export default function Register() {
   const [isLoading, setIsLoading] = useState(false);
   const [hireDate, setHireDate] = useState<Date | null>(null);
+  const [endDates, setEndDates] = useState<(Date | null)[]>([]);
   const [vacationFields, setVacationFields] = useState([{ id: 1 }]);
-  
-  const toast = useToast();
+  const [formData, setFormData] = useState<Record<string, any>>({});
+  const [calculatedEndDates, setCalculatedEndDates] = useState<string[]>([]);
+
   const token: any = window.localStorage.getItem('token');
   const decodedToken: any = jwt.decode(token);
   const id = decodedToken.id;
+  const toast = useToast();
 
   useEffect(() => {
     async function getUserData() {
@@ -80,64 +62,71 @@ export default function Register() {
     }
 
     getUserData();
-  }, [toast, userService]);
+  }, [id, toast, token]);
 
-  const schema = yup.object().shape({
-    // vacationPeriod: yup.number()
-    // .min(5, "Escolha um valor entre 5 e 30 dias")
-    // .max(30, "Escolha um valor entre 5 e 30 dias")
-    // .test("validVacationPeriod", "Escolha valores entre 5 e 25", value => {
-    //   return value !== undefined && ![26, 27, 28, 29].includes(value);
-    // }),
-    // startVacation: yup.date().required().test("startVacation", "A data de início das férias deve ser pelo menos 12 meses após a data de contratação", (value) => {
-    //   if (!value || !hireDate) return false;
-    //   const startVacationDate = startOfDay(value);
-    //   const hireDatePlus12Months = startOfDay(addMonths(hireDate, 12));
-    //   return isAfter(startVacationDate, hireDatePlus12Months);
-    // }),
-    // endVacation: yup.date().required().test("endVacation", `Altere o campo período férias`, (value, context) => {
-    //   if (!value || !context.parent.startVacation || !context.parent.vacationPeriod) return false;
-    //   const endVacationDate = startOfDay(value);
-    //   const startVacationPlusNDays = subDays(startOfDay(addDays(new Date(context.parent.startVacation), context.parent.vacationPeriod)), 1);
-    //   return isEqual(endVacationDate, startVacationPlusNDays);
-    // }),
-  });
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    setValue,
-    watch,
-  } = useForm<IVacationFormData>({
-    resolver: yupResolver(schema),
-    defaultValues: {
-      hireDate: hireDate || undefined,
-    },
-  });
-
-  const startVacation: any = watch("startVacation");
-  const vacationPeriod: any = watch("vacationPeriod");
-
-  useEffect(() => {
-    if (startVacation && !isNaN(Date.parse(startVacation)) && vacationPeriod) {
-      const startVacationDate = new Date(startVacation);
-      const endVacationDate = addDays(startVacationDate, vacationPeriod);
-      
-      if (endVacationDate instanceof Date && !isNaN(endVacationDate.getTime())) {
-        setValue("endVacation", format(endVacationDate, 'yyyy-MM-dd'));
-      }
+  const handleInputChange = (name: string, value: any) => {
+    if (name.startsWith('endVacation') || name.startsWith('startVacation')) {
+        const dateObj = new Date(value);
+        if (isNaN(dateObj.getTime())) {
+            console.error(`Invalid date for ${name}:`, value);
+            return;
+        }
     }
-  }, [startVacation, setValue, vacationPeriod]);
 
-  const onSubmit = async (data: IVacationFormData) => {
-    const decodedToken: any = jwt.decode(token);
-    const idUser = decodedToken.id;
+    setFormData(prevState => {
+        let updatedFormData = { ...prevState, [name]: value };
+        const fieldId = name.match(/\d+$/);
+        if (fieldId && (name.startsWith('startVacation') || name.startsWith('vacationPeriod'))) {
+            const period = updatedFormData[`vacationPeriod${fieldId}`];
+            const startDateStr = updatedFormData[`startVacation${fieldId}`];
+            
+            if (period && startDateStr) {
+                const startDate = new Date(startDateStr);
+                const endDate = new Date(startDate);
+                endDate.setDate(startDate.getDate() + Number(period) - 1);
+                updatedFormData[`endVacation${fieldId}`] = formatDate(endDate);
+            }
+        }
+
+        return updatedFormData;
+    });
+  };
+
+  const formatDate = useCallback((date: Date): string => {
+    return format(date, 'yyyy-MM-dd');
+  }, []);
+
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const decoded = jwt.decode(token) as DecodedJwt;
+
+    if (!decoded || !decoded.id) {
+      console.error("Token inválido ou sem propriedade 'id'");
+      return;
+    }
+
+    const { id: idUser } = decoded;
+
+    const vacations = vacationFields.map(({ id }, index) => {
+      const vacationPeriod = formData[`vacationPeriod${id}`];
+      const startVacation = formData[`startVacation${id}`];
+      const endVacation = calculatedEndDates[index] || '';
     
-    const { hireDate, ...requestData } = data;
-    requestData.idUser = idUser;
+      if (vacationPeriod && startVacation && endVacation) {
+        return {
+          vacationPeriod: Number(vacationPeriod),
+          startVacation: formatDate(new Date(startVacation)),
+          endVacation: formatDate(new Date(endVacation))
+        };
+      }
+      return null;
+    }).filter(Boolean);
 
-    console.log(requestData)
+    const requestData = {
+      idUser,
+      vacations
+    };
+    console.log(requestData, token);
     setIsLoading(true);
       try {
         await vacationService.createVacation(requestData, token);
@@ -159,8 +148,24 @@ export default function Register() {
         });
       } finally {
         setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const newEndDates: string[] = vacationFields.map((field) => {
+      const period: any = formData[`vacationPeriod${field.id}`];
+      const startDateStr: any = formData[`startVacation${field.id}`];
+  
+      if (period && startDateStr) {
+        const startDate = new Date(startDateStr);
+        const endDate = new Date(startDate);
+        endDate.setDate(startDate.getDate() + Number(period) - 1);
+        return formatDate(endDate);
       }
-    };
+      return '';
+    });  
+    setCalculatedEndDates(newEndDates);
+  }, [formData, vacationFields, formatDate]);
 
   return (
     <Flex
@@ -176,7 +181,7 @@ export default function Register() {
         </Stack>
         <Box rounded={'lg'} bg={useColorModeValue('white', 'gray.700')} boxShadow={'lg'} p={8}>
           <Stack spacing={4}>
-      <form action="" autoComplete='off' onSubmit={handleSubmit(onSubmit)}>
+      <form action="" autoComplete='off' onSubmit={onSubmit}>
         <Stack spacing={8} mx={"auto"} maxW={"lg"} py={12} px={6}>
           <Box
             rounded={"lg"}
@@ -193,7 +198,8 @@ export default function Register() {
                     <Input
                       type="number"
                       placeholder="Digite a quantidade de dias"
-                      {...register(`vacationPeriod${field.id}`)}
+                      value={formData[`vacationPeriod${field.id}`] || ''}
+                      onChange={(e) => handleInputChange(`vacationPeriod${field.id}`, e.target.value)}
                     />
                   </FormControl>
                   
@@ -201,20 +207,21 @@ export default function Register() {
                     <FormLabel>Início das férias</FormLabel>
                     <Input
                       type="date"
-                      {...register(`startVacation${field.id}`, { valueAsDate: true })}
+                      value={formData[`startVacation${field.id}`] || ''}
+                      onChange={(e) => handleInputChange(`startVacation${field.id}`, e.target.value)}
                     />
                   </FormControl>
-                  
                   <FormControl id="endVacation">
                     <FormLabel>Final das férias</FormLabel>
                     <Input
-                      type="date"
-                      {...register(`endVacation${field.id}`, { valueAsDate: true })}
+                        type="date"
+                        value={endDates[index] && endDates[index] !== null ? formatDate(endDates[index] as Date) : formData[`endVacation${field.id}`] || ''}
+                        onChange={(e) => handleInputChange(`endVacation${field.id}`, e.target.value)}
                     />
                   </FormControl>
                 </Fragment>
               ))}
-          </Box>
+            </Box>
               {vacationFields.length < 3 && (
                 <Button onClick={() => {
                   const newFieldId = vacationFields.length + 1;
