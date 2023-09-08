@@ -172,79 +172,82 @@ export default function Register() {
         </Stack>
         <Box rounded={'lg'} bg={useColorModeValue('white', 'gray.700')} boxShadow={'lg'} p={8}>
           <Stack spacing={4}>
-            <form action="" autoComplete='off' onSubmit={onSubmit}>
-              <Stack spacing={8} mx={"auto"} maxW={"lg"} py={12} px={6}>
-                <Box
-                  rounded={"lg"}
-                  bg={useColorModeValue("white", "gray.700")}
-                  boxShadow={"lg"}
-                  p={8}
+      <form action="" autoComplete='off' onSubmit={onSubmit}>
+        <Stack spacing={8} mx={"auto"} maxW={"lg"} py={12} px={6}>
+          <Box
+            rounded={"lg"}
+            bg={useColorModeValue("white", "gray.700")}
+            boxShadow={"lg"}
+            p={8}
+          >
+            <Stack spacing={4}>
+              <Box>
+              {vacationFields.map((field, index) => (
+                <Fragment key={field.id}>
+                  <FormControl id="vacationPeriod" isRequired>
+                    <FormLabel>Período de férias</FormLabel>
+                    <Input
+                      type="number"
+                      placeholder="Digite a quantidade de dias"
+                      value={formData[`vacationPeriod${field.id}`] || ''}
+                      onChange={(e) => handleInputChange(`vacationPeriod${field.id}`, e.target.value)}
+                    />
+                  </FormControl>
+                  
+                  <FormControl id="startVacation" isRequired>
+                    <FormLabel>Início das férias</FormLabel>
+                    <Input
+                      type="date"
+                      value={formData[`startVacation${field.id}`] || ''}
+                      onChange={(e) => handleInputChange(`startVacation${field.id}`, e.target.value)}
+                    />
+                  </FormControl>
+                  <FormControl id="endVacation">
+                    <FormLabel>Final das férias</FormLabel>
+                    <Input
+                        type="date"
+                        value={endDates[index] && endDates[index] !== null ? formatDate(endDates[index] as Date) : formData[`endVacation${field.id}`] || ''}
+                        onChange={(e) => handleInputChange(`endVacation${field.id}`, e.target.value)}
+                    />
+                  </FormControl>
+                </Fragment>
+              ))}
+            </Box>
+              {vacationFields.length < 3 && (
+                <Button onClick={() => {
+                  const newFieldId = vacationFields.length + 1;
+                  setVacationFields(prevFields => [...prevFields, { id: newFieldId }]);
+                }}>
+                  Adicionar mais férias
+                </Button>
+              )}
+              <Stack spacing={10} pt={2}>
+                <Button
+                   bg={'blue.400'}
+                   color={'white'}
+                   _hover={{
+                     bg: 'blue.500',
+                   }}
+                   type="submit"
+                   isLoading={isLoading}
                 >
-                  <Stack spacing={4}>
-                    <Box>
-                      {vacationFields.map((field, index) => (
-                        <Fragment key={field.id}>
-                          <Text fontSize={'md'} fontWeight={600} color={'gray.600'} mb={4}>
-                            {`Férias #${index + 1}`}
-                          </Text>
-                          <Stack spacing={4}>
-                            <FormControl id={`vacationPeriod${field.id}`}>
-                              <FormLabel>Período de férias (dias)</FormLabel>
-                              <Input
-                                type="number"
-                                name={`vacationPeriod${field.id}`}
-                                onChange={(e) =>
-                                  handleInputChange(e.target.name, e.target.value)
-                                }
-                                required
-                              />
-                            </FormControl>
-                            <FormControl id={`startVacation${field.id}`}>
-                              <FormLabel>Data de início</FormLabel>
-                              <Input
-                                type="date"
-                                name={`startVacation${field.id}`}
-                                onChange={(e) =>
-                                  handleInputChange(e.target.name, e.target.value)
-                                }
-                                required
-                              />
-                            </FormControl>
-                            <FormControl id={`endVacation${field.id}`} isReadOnly>
-                              <FormLabel>Data de término</FormLabel>
-                              <Input
-                                type="date"
-                                name={`endVacation${field.id}`}
-                                value={calculatedEndDates[index] || ''}
-                                readOnly
-                              />
-                            </FormControl>
-                          </Stack>
-                        </Fragment>
-                      ))}
-                    </Box>
-                  </Stack>
-                </Box>
-              </Stack>
-              <Stack spacing={6}>
-                <Stack direction={'row'} spacing={4} align={'center'}>
-                  <Button
-                    bg={'blue.400'}
-                    color={'white'}
-                    _hover={{
-                      bg: 'blue.500',
-                    }}
-                    isLoading={isLoading}
-                    type="submit"
-                  >
-                    Registrar
+                  Registrar Férias
                   </Button>
-                </Stack>
               </Stack>
-            </form>
-          </Stack>
-        </Box>
+              <Stack pt={6}>
+              <Text align={"center"}>
+                Voltar para sua  <Button as="a" color={"blue.400"} href="/login" variant={"link"}>
+              Conta
+            </Button>
+                </Text>
+              </Stack>
+            </Stack>
+          </Box>
+        </Stack>
+      </form>
+      </Stack>
+      </Box>
       </Stack>
     </Flex>
-  );
+  )
 }
