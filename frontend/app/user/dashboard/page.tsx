@@ -38,7 +38,7 @@ export default function UserDashboard() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [updatedPeriod, setUpdatedPeriod] = useState<string>("");
   const [isModalOpen, setModalOpen] = useState(false);
-  const [modalContent, setModalContent] = useState({ title: "", message: "" });
+  const [modalContent, setModalContent] = useState({ title: "", message: "" });  
 
   useEffect(() => {
     const storedToken = window.localStorage.getItem('token');
@@ -131,65 +131,82 @@ export default function UserDashboard() {
   const closeModal = () => {
     setModalOpen(false);
     setModalContent({ title: "", message: "" });
-  };  
+  };
 
   return (
-  <>
-    <Box>
-      <Table>
-        <Thead>
-          <Tr>
-            <Th>Nome</Th>
-            <Th>Email</Th>
-            <Th>Data de Contratação</Th>
-            <Th>Total de dias</Th>
-            <Th>Início das Férias</Th>
-            <Th>Final das Férias</Th>
-            <Th>Ações</Th> {/* Coluna para os botões */}
-          </Tr>
-        </Thead>
-        <Tbody>
-          {user.vacations.map(vacation => (
-            <Tr key={vacation.id}>
-              <Td>{user.name}</Td>
-              <Td>{user.email}</Td>
-              <Td>{moment(user.hireDate).format('DD/MM/YYYY')}</Td>
-              <Td>
-                {editingId === vacation.id ? (
-                  <Input 
-                    value={updatedPeriod} 
-                    onChange={(e: { target: { value: SetStateAction<string>; }; }) => setUpdatedPeriod(e.target.value)} 
-                    size="sm" 
-                  />
-                ) : (
-                  vacation.vacationPeriod
-                )}
-              </Td>
-              <Td>{moment(vacation.startVacation).format('DD/MM/YYYY')}</Td>
-              <Td>{moment(vacation.endVacation).format('DD/MM/YYYY')}</Td>
-              <Td>
-                {editingId === vacation.id ? (
-                  <>
-                    <IconButton icon={<CheckIcon />} onClick={() => handleUpdate(vacation.id)} aria-label="Confirmar edição" colorScheme="green" />
-                    <IconButton icon={<CloseIcon />} onClick={handleCancelEdit} aria-label="Cancelar edição" colorScheme="red" />
-                  </>
-                ) : (
-                  <>
-                    <IconButton icon={<EditIcon />} onClick={() => handleEdit(vacation.id)} aria-label="Editar" />
-                    <IconButton icon={<DeleteIcon />} onClick={() => handleDelete(vacation.id)} aria-label="Excluir" colorScheme="red" />
-                  </>
-                )}
-              </Td>
+    <>
+      <Box>
+        <Table>
+          <Thead>
+            <Tr>
+              <Th>Nome</Th>
+              <Th>Email</Th>
+              <Th>Data de Contratação</Th>
+              <Th>Total de dias</Th>
+              <Th>Início das Férias</Th>
+              <Th>Final das Férias</Th>
+              <Th>Ações</Th> {/* Coluna para os botões */}
             </Tr>
-          ))}
-        </Tbody>
-      </Table>
-    </Box>
-    <Box marginTop="10">
-      <Button leftIcon={<AddIcon />} colorScheme="teal" variant="solid" onClick={() => window.location.href='/user/vacation'}>
-        Registrar Novas Férias
-      </Button>
-    </Box>
-  </>
-  )
+          </Thead>
+          <Tbody>
+            {user.vacations.map(vacation => (
+              <Tr key={vacation.id}>
+                <Td>{user.name}</Td>
+                <Td>{user.email}</Td>
+                <Td>{moment(user.hireDate).format('DD/MM/YYYY')}</Td>
+                <Td>
+                  {editingId === vacation.id ? (
+                    <Input 
+                      value={updatedPeriod} 
+                      onChange={(e: { target: { value: SetStateAction<string>; }; }) => setUpdatedPeriod(e.target.value)} 
+                      size="sm" 
+                    />
+                  ) : (
+                    vacation.vacationPeriod
+                  )}
+                </Td>
+                <Td>{moment(vacation.startVacation).format('DD/MM/YYYY')}</Td>
+                <Td>{moment(vacation.endVacation).format('DD/MM/YYYY')}</Td>
+                <Td>
+                  {editingId === vacation.id ? (
+                    <>
+                      <IconButton icon={<CheckIcon />} onClick={() => handleUpdate(vacation.id)} aria-label="Confirmar edição" colorScheme="green" />
+                      <IconButton icon={<CloseIcon />} onClick={handleCancelEdit} aria-label="Cancelar edição" colorScheme="red" />
+                    </>
+                  ) : (
+                    <>
+                      <IconButton icon={<EditIcon />} onClick={() => handleEdit(vacation.id)} aria-label="Editar" />
+                      <IconButton icon={<DeleteIcon />} onClick={() => handleDelete(vacation.id)} aria-label="Excluir" colorScheme="red" />
+                    </>
+                  )}
+                </Td>
+              </Tr>
+            ))}
+          </Tbody>
+        </Table>
+      </Box>
+      <Box marginTop="10">
+        <Button leftIcon={<AddIcon />} colorScheme="teal" variant="solid" onClick={() => window.location.href='/user/vacation'}>
+          Registrar Novas Férias
+        </Button>
+      </Box>
+  
+      {/* Modal de Confirmação */}
+      <Modal isOpen={isModalOpen} onClose={closeModal}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>{modalContent.title}</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <p>{modalContent.message}</p>
+          </ModalBody>
+          <ModalFooter>
+            <Button colorScheme="blue" onClick={closeModal}>
+              Ok
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+    </>
+  );
 }
