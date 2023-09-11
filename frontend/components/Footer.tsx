@@ -57,7 +57,7 @@ export default function SmallWithSocial() {
         justify={{ base: "center", md: "space-between" }}
         align={{ base: "center", md: "center" }}
       >
-        <Text>Mind Vacation - Suas férias bem planejadas</Text>
+        <Text>Férias Fácil - Suas férias bem planejadas</Text>
       </Container>
     </Box>
   )
