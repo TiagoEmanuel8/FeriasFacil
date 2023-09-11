@@ -1,9 +1,10 @@
 "use client"
 
-import { useEffect, useState } from 'react';
-import { Box, Table, Tbody, Td, Th, Thead, Tr, Button, Spinner, Center } from '@chakra-ui/react';
-import { AddIcon } from '@chakra-ui/icons';
+import { Box, Table, Tbody, Td, Th, Thead, Tr, Button, Spinner, Center, Input, IconButton, Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody, ModalFooter, useToast } from '@chakra-ui/react';
+import { AddIcon, EditIcon, DeleteIcon, CheckIcon, CloseIcon } from '@chakra-ui/icons';
+import { SetStateAction, useEffect, useState } from 'react';
 import { userService } from '@/api/userAPI';
+import { vacationService } from '@/api/vacationAPI';
 import jwt from 'jsonwebtoken';
 import moment from 'moment';
 
@@ -17,12 +18,15 @@ interface User {
 
 interface Vacation {
   id: number;
+  vacationPeriod: number;
   startVacation: string;
   endVacation: string;
 }
 
 interface Token {
   id: number;
+  name: string;
+  hireDate: Date;
   iat: number;
   exp: number;
 }
@@ -31,6 +35,10 @@ export default function UserDashboard() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [updatedPeriod, setUpdatedPeriod] = useState<string>("");
+  const [isModalOpen, setModalOpen] = useState(false);
+  const [modalContent, setModalContent] = useState({ title: "", message: "" });
 
   useEffect(() => {
     const storedToken = window.localStorage.getItem('token');
@@ -52,6 +60,50 @@ export default function UserDashboard() {
     }
   }, []);
 
+  const handleDelete = async (vacationId: number) => {
+    if (!token) {
+      console.error("Token not available");
+      return;
+    }
+  
+    try {
+      await vacationService.deleteVacation(vacationId, token);
+      setUser(prev => prev ? { ...prev, vacations: prev.vacations.filter(v => v.id !== vacationId) } : null);
+      openModal("Sucesso!", "Registro de férias deletado com sucesso.");
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleEdit = (vacationId: number) => {
+    setEditingId(vacationId);
+  };
+
+  const handleUpdate = async (vacationId: number) => {
+    if (!token) {
+      console.error("Token not available");
+      return;
+    }
+  
+    try {
+      await vacationService.editVacation(vacationId, updatedPeriod, token);
+      setUser(prev => prev ? {
+        ...prev, 
+        vacations: prev.vacations.map(v => v.id === vacationId ? { ...v, vacationPeriod: parseInt(updatedPeriod) } : v)
+      } : null);
+      setEditingId(null);
+      setUpdatedPeriod("");
+      openModal("Sucesso!", "Registro de férias editado com sucesso.");
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setUpdatedPeriod("");
+  };
+
   if (loading) {
     return (
       <Center>
@@ -60,53 +112,84 @@ export default function UserDashboard() {
     );
   }
 
-  if (!user) {
+  if (!user || user.vacations.length === 0) {
     return (
       <Box>
-        <h1>Não foi possível carregar os dados do usuário</h1>
+        <h1>{ user ? "Nenhum registro de férias disponível" : "Não foi possível carregar os dados do usuário" }</h1>
+        <Button leftIcon={<AddIcon />} colorScheme="teal" variant="solid" onClick={() => window.location.href='/user/vacation'}>
+          Registrar Novas Férias
+        </Button>
       </Box>
     );
   }
 
+  const openModal = (title: string, message: string) => {
+    setModalContent({ title, message });
+    setModalOpen(true);
+  };
+  
+  const closeModal = () => {
+    setModalOpen(false);
+    setModalContent({ title: "", message: "" });
+  };  
+
   return (
-    <>
-      <Box>
-        <Table>
-          <Thead>
-            <Tr>
-              <Th>Nome</Th>
-              <Th>Email</Th>
-              <Th>Data de Contratação</Th>
-              <Th>Início das Férias</Th>
-              <Th>Final das Férias</Th>
-            </Tr>
-          </Thead>
-          <Tbody>
-            <Tr>
+  <>
+    <Box>
+      <Table>
+        <Thead>
+          <Tr>
+            <Th>Nome</Th>
+            <Th>Email</Th>
+            <Th>Data de Contratação</Th>
+            <Th>Total de dias</Th>
+            <Th>Início das Férias</Th>
+            <Th>Final das Férias</Th>
+            <Th>Ações</Th> {/* Coluna para os botões */}
+          </Tr>
+        </Thead>
+        <Tbody>
+          {user.vacations.map(vacation => (
+            <Tr key={vacation.id}>
               <Td>{user.name}</Td>
               <Td>{user.email}</Td>
               <Td>{moment(user.hireDate).format('DD/MM/YYYY')}</Td>
               <Td>
-                {user.vacations.length > 0
-                  ? moment(user.vacations[user.vacations.length - 1].startVacation).format('DD/MM/YYYY')
-                  : '-'}
+                {editingId === vacation.id ? (
+                  <Input 
+                    value={updatedPeriod} 
+                    onChange={(e: { target: { value: SetStateAction<string>; }; }) => setUpdatedPeriod(e.target.value)} 
+                    size="sm" 
+                  />
+                ) : (
+                  vacation.vacationPeriod
+                )}
               </Td>
+              <Td>{moment(vacation.startVacation).format('DD/MM/YYYY')}</Td>
+              <Td>{moment(vacation.endVacation).format('DD/MM/YYYY')}</Td>
               <Td>
-                {user.vacations.length > 0
-                  ? moment(user.vacations[user.vacations.length - 1].endVacation).format('DD/MM/YYYY')
-                  : '-'}
+                {editingId === vacation.id ? (
+                  <>
+                    <IconButton icon={<CheckIcon />} onClick={() => handleUpdate(vacation.id)} aria-label="Confirmar edição" colorScheme="green" />
+                    <IconButton icon={<CloseIcon />} onClick={handleCancelEdit} aria-label="Cancelar edição" colorScheme="red" />
+                  </>
+                ) : (
+                  <>
+                    <IconButton icon={<EditIcon />} onClick={() => handleEdit(vacation.id)} aria-label="Editar" />
+                    <IconButton icon={<DeleteIcon />} onClick={() => handleDelete(vacation.id)} aria-label="Excluir" colorScheme="red" />
+                  </>
+                )}
               </Td>
             </Tr>
-          </Tbody>
-        </Table>
-      </Box>
-      {user.vacations.length === 0 && (
-        <Box marginTop="10">
-          <Button leftIcon={<AddIcon />} colorScheme="teal" variant="solid" onClick={() => window.location.href='/user/vacation'}>
-            Registrar Novas Férias
-          </Button>
-        </Box>
-      )}
-    </>
-  );
+          ))}
+        </Tbody>
+      </Table>
+    </Box>
+    <Box marginTop="10">
+      <Button leftIcon={<AddIcon />} colorScheme="teal" variant="solid" onClick={() => window.location.href='/user/vacation'}>
+        Registrar Novas Férias
+      </Button>
+    </Box>
+  </>
+  )
 }

@@ -66,13 +66,13 @@ export class VacationRepository {
     return vacations.map(this.mapVacationToDto);
   }
 
-  async findOne(id: number) {
-    const vacation = await this.prisma.vacation.findUnique({
-      where: { id },
+  async findOne(idUser: number) {
+    const vacation = await this.prisma.vacation.findMany({
+      where: { idUser },
       include: { user: true },
     });
     if (!vacation) return null;
-    return this.mapVacationToDto(vacation);
+    return vacation;
   }
 
   // async verifyExisteField(email: string): Promise<VacationEntity> {

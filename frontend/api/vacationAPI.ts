@@ -17,10 +17,6 @@ const createVacation = async (data: any, token: any) => {
   } catch (error: unknown) {
     if (error instanceof Error) {
       const axiosError = error as AxiosError<ErrorResponse>;
-
-      // if (axiosError.response && axiosError.response.status === 409) {
-      //   throw new Error('Cargo já cadastrado');
-      // }
       throw new Error(axiosError.response?.data.message);
     }
     throw error;
@@ -34,10 +30,36 @@ const getVacations = async () => {
   } catch (error: unknown) {
     if (error instanceof Error) {
       const axiosError = error as AxiosError<ErrorResponse>;
+      throw new Error(axiosError.response?.data.message);
+    }
+    throw error;
+  }
+};
 
-      // if (axiosError.response && axiosError.response.status === 409) {
-      //   throw new Error('Cargo já cadastrado');
-      // }
+const editVacation = async (id: number, data: any, token: string) => {
+  try {
+    const response = await axios.patch(`${API_URL}/${id}`, data, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return response.data;
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      const axiosError = error as AxiosError<ErrorResponse>;
+      throw new Error(axiosError.response?.data.message);
+    }
+    throw error;
+  }
+};
+
+const deleteVacation = async (id: number, token: string) => {
+  try {
+    const response = await axios.delete(`${API_URL}/${id}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return response.data;
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      const axiosError = error as AxiosError<ErrorResponse>;
       throw new Error(axiosError.response?.data.message);
     }
     throw error;
@@ -46,5 +68,7 @@ const getVacations = async () => {
 
 export const vacationService = {
   createVacation,
-  getVacations
+  getVacations,
+  editVacation,
+  deleteVacation
 };

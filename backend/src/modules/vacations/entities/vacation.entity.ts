@@ -20,5 +20,7 @@ export class VacationEntity implements IVacationEntityInterface {
   startVacation: Date;
   endVacation: Date;
   idUser: number;
+  name: string;
+  hireDate: Date;
   user?: IUser;
 }

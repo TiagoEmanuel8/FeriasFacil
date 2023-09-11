@@ -5,6 +5,7 @@ import {
   IsNumber,
   ArrayNotEmpty,
   ValidateNested,
+  IsString,
 } from 'class-validator';
 
 export class SingleVacationDto {
@@ -27,6 +28,15 @@ export class CreateVacationDto {
   @IsNotEmpty()
   @IsNumber()
   idUser: number;
+
+  @IsNotEmpty()
+  @IsString()
+  name: string;
+
+  @IsNotEmpty()
+  @IsDate()
+  @Type(() => Date)
+  hireDate: Date;
 
   @ArrayNotEmpty()
   @ValidateNested({ each: true })

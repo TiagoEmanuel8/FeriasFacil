@@ -19,6 +19,8 @@ export class VacationsService {
 
     return await this.repository.createMultipleVacations({
       idUser: createVacationDto.idUser,
+      name: createVacationDto.name,
+      hireDate: createVacationDto.hireDate,
       vacations: vacationsToCreate,
     });
   }

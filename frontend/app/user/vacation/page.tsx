@@ -96,7 +96,7 @@ export default function Register() {
 
     if (!decoded || !decoded.id) return;
 
-    const { id: idUser } = decoded;
+    const { id: idUser, name, hireDate } = decoded;
 
     const vacations = vacationFields.map(({ id }, index) => {
       const vacationPeriod = formData[`vacationPeriod${id}`];
@@ -115,12 +115,15 @@ export default function Register() {
 
     const requestData = {
       idUser,
+      name,
+      hireDate,
       vacations
     };
 
     setIsLoading(true);
     try {
       await vacationService.createVacation(requestData, token);
+      console.log(requestData)
       toast({
         title: "Sucesso",
         description: "Férias cadastradas com sucesso",
