@@ -10,6 +10,7 @@ const globalInterceptors = [
   new Interceptors.DatabaseInterceptor(),
   new Interceptors.UnauthorizedInterceptor(),
   new Interceptors.NotFoundInterceptor(),
+  new Interceptors.BadRequestInterceptor(),
 ];
 
 async function bootstrap() {

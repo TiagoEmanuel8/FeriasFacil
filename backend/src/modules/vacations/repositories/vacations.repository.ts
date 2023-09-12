@@ -66,7 +66,7 @@ export class VacationRepository {
     return vacations.map(this.mapVacationToDto);
   }
 
-  async findOne(idUser: number) {
+  async findVacationUser(idUser: number) {
     const vacation = await this.prisma.vacation.findMany({
       where: { idUser },
       include: { user: true },
@@ -75,13 +75,34 @@ export class VacationRepository {
     return vacation;
   }
 
-  // async verifyExisteField(email: string): Promise<VacationEntity> {
-  //   return this.prisma.vacation.findFirst({
-  //     where: {
-  //       email,
-  //     },
-  //   });
-  // }
+  async findOne(id: number) {
+    const vacation = await this.prisma.vacation.findFirst({
+      where: { id },
+      include: { user: true },
+    });
+    if (!vacation) return null;
+    return vacation;
+  }
+
+  async checkOverlappingVacations(
+    idUser: number,
+    startVacation: Date,
+    endVacation: Date,
+  ): Promise<boolean> {
+    const overlappingVacation = await this.prisma.vacation.findFirst({
+      where: {
+        idUser: idUser,
+        startVacation: {
+          lte: endVacation,
+        },
+        endVacation: {
+          gte: startVacation,
+        },
+      },
+    });
+
+    return !!overlappingVacation;
+  }
 
   async update(id: number, updateVacationDto: UpdateVacationDto) {
     await this.prisma.vacation.update({

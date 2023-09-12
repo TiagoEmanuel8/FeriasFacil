@@ -4,6 +4,8 @@ import { UpdateVacationDto } from './dto/update-vacation.dto';
 import { VacationRepository } from './repositories/vacations.repository';
 import { NotFoundError } from 'src/common/errors/types/NotFoundError';
 import { UnauthorizedError } from 'src/common/errors/types/UnauthorizedError';
+import { BadRequestError } from 'src/common/errors/types/BadRequestError';
+import { differenceInMonths } from 'date-fns';
 
 @Injectable()
 export class VacationsService {
@@ -15,14 +17,66 @@ export class VacationsService {
   // As férias podem ser fracionadas em até três períodos, desde que um deles não seja ser inferior a 14 dias corridos e os demais não sejam inferiores a cinco dias corridos, segundo a Reforma Trabalhista (Lei 13.467/2017).
 
   async create(createVacationDto: CreateVacationDto) {
-    console.log(createVacationDto);
+    const monthsSinceHire = differenceInMonths(
+      new Date(createVacationDto.vacations[0].startVacation),
+      new Date(createVacationDto.hireDate),
+    );
+
+    if (monthsSinceHire < 12) {
+      throw new BadRequestError(
+        'Não é possível registrar férias antes de 12 meses de contratação.',
+      );
+    }
+
+    const totalVacationDays = createVacationDto.vacations.reduce(
+      (acc, vacation) => acc + vacation.vacationPeriod,
+      0,
+    );
+
+    if (totalVacationDays !== 30) {
+      throw new BadRequestError(
+        'O total de dias de férias deve somar 30 dias.',
+      );
+    }
+
+    // for (const newVacation of createVacationDto.vacations) {
+    //   const isOverlapping = await this.repository.checkOverlappingVacations(
+    //     createVacationDto.idUser,
+    //     new Date(newVacation.startVacation),
+    //     new Date(newVacation.endVacation),
+    //   );
+
+    //   if (isOverlapping) {
+    //     throw new BadRequestError(
+    //       'Não é permitido cadastrar períodos de férias que se sobreponham.',
+    //     );
+    //   }
+    // }
+
+    const periods = createVacationDto.vacations.map(
+      (vacation) => vacation.vacationPeriod,
+    );
+
+    const hasAtLeastOnePeriodOf14Days = periods.includes(14);
+    if (!hasAtLeastOnePeriodOf14Days) {
+      throw new BadRequestError(
+        'Ao fracionar férias, um dos períodos deve ter no mínimo 14 dias.',
+      );
+    }
+
+    const otherPeriods = periods.filter((period) => period !== 14);
+    for (let i = 0; i < otherPeriods.length; i++) {
+      if (otherPeriods[i] < 5) {
+        throw new BadRequestError(
+          'Os períodos fracionados subsequentes de férias devem ter no mínimo 5 dias.',
+        );
+      }
+    }
 
     const vacationsToCreate = createVacationDto.vacations.map((vacation) => ({
       ...vacation,
       idUser: createVacationDto.idUser,
     }));
-
-    // implementar validações para as datas .. o frontend apenas vai mandar as datas para o backend, o backend vai fazer as validações
 
     return await this.repository.createMultipleVacations({
       idUser: createVacationDto.idUser,
@@ -36,8 +90,8 @@ export class VacationsService {
     return await this.repository.findAll();
   }
 
-  async findOne(id: number) {
-    const user = await this.repository.findOne(id);
+  async findVacationUser(id: number) {
+    const user = await this.repository.findVacationUser(id);
     if (!user) throw new NotFoundError(`User ${id} is not found`);
     return user;
   }
@@ -54,12 +108,13 @@ export class VacationsService {
   }
 
   async remove(id: number, userReq: any): Promise<void> {
-    if (userReq.id !== id) {
+    const vacation = await this.repository.findOne(id);
+
+    if (vacation.user.id !== userReq.id || userReq.type === 'adm') {
       throw new UnauthorizedError(
         'You are not authorized to exclude this vacation',
       );
     }
-    const vacation = await this.repository.findOne(id);
     if (!vacation) throw new NotFoundError(`Vacation ${id} is not found`);
     await this.repository.remove(id);
   }

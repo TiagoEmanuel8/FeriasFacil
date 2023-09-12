@@ -32,7 +32,7 @@ export class VacationsController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.vacationsService.findOne(+id);
+    return this.vacationsService.findVacationUser(+id);
   }
 
   @UseGuards(JwtAuthGuard)
