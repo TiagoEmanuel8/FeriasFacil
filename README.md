@@ -1,5 +1,3 @@
-
-
 # Boas vindas ao projeto Férias Fácil
 
 # Sumário
@@ -130,15 +128,23 @@ O Férias Fácil é uma aplicação web fullstack que tem como objetivo realizar
 ---
 
 # Preview
+clique sobre a imagem para 'dar play' nos vídeos
 
-O projeto foi construido pensando em responsividade, então nas imagens abaixo, algumas são de telas de celular e outras em uma tela de desktop
+Cadastrando novo usuário
 
-![Captura-de-tela-de-2023-08-07-23-40-27](https://github.com/TiagoEmanuel8/challenge-working-minds/assets/72472530/ecfcdaa4-63c8-40b7-8766-95f59aa8183e)
-![Captura-de-tela-de-2023-08-07-23-49-19](https://github.com/TiagoEmanuel8/challenge-working-minds/assets/72472530/e9c992db-4499-4827-b091-0147ce0e3f0e)
-![Captura-de-tela-de-2023-08-07-23-43-33](https://github.com/TiagoEmanuel8/challenge-working-minds/assets/72472530/b90020d7-3a3a-4acd-8a05-7ff82c0937fb)
-![Captura-de-tela-de-2023-08-07-23-45-57](https://github.com/TiagoEmanuel8/challenge-working-minds/assets/72472530/22fca54c-89c0-471c-9234-bd85364f558a)
-![Captura-de-tela-de-2023-08-07-23-44-09](https://github.com/TiagoEmanuel8/challenge-working-minds/assets/72472530/266ef2c7-27f2-4ae2-a655-87c3ab692fdc)
-![Captura-de-tela-de-2023-08-07-23-40-53](https://github.com/TiagoEmanuel8/challenge-working-minds/assets/72472530/6958dd4e-0c1d-4ccb-a2e0-5488515a14a0)
+[1.webm](https://github.com/TiagoEmanuel8/FeriasFacil/assets/72472530/48cf6c76-47d0-41a3-8c90-53d6f7d357b4)
+
+Cadastrando novas férias
+
+[2.webm](https://github.com/TiagoEmanuel8/FeriasFacil/assets/72472530/0fb274ad-06ba-4e5f-9375-730bf3c4ce8e)
+
+Acessando painel administrativo
+
+[3.webm](https://github.com/TiagoEmanuel8/FeriasFacil/assets/72472530/33e39148-1db8-4619-82ed-df7465631ae2)
+
+Cadastrando novo cargo
+
+[4.webm](https://github.com/TiagoEmanuel8/FeriasFacil/assets/72472530/85fa2666-4918-4a88-91bc-64ca06696886)
 
 ---
 
