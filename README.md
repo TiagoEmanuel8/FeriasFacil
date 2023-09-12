@@ -18,7 +18,7 @@ O Férias Fácil é uma aplicação web fullstack que tem como objetivo realizar
 
 ---
 
-# Tecnologias envolvidas:
+# Tecnologias:
 <div>
   <a href="https://www.typescriptlang.org/">
     <img src="https://img.shields.io/badge/typescript-339933?style=for-the-badge&logo=typescript&color=gray" />
@@ -165,20 +165,65 @@ Digite o comando abaixo para clonar o projeto.
   
 ```  
 git clone https://github.com/TiagoEmanuel8/challenge-working-minds.git
-  
 ```  
   
-### Abra 2 terminais e em cada um dele entre nas pastas  
+Entre na pasta  
   
+```  
+cd feriasfacil
+  
+```  
+### Executando o projeto com **docker**
+
+<details>
+
+<summary>Clique para exibir os detalhes</summary>
+
+
+### Execute o comando abaixo para iniciar o docker  
+  
+```  
+docker-compose up -d && docker exec -it feriasfacil bash
+```  
+### Abra 2 terminais dentro do projeto
+ no 1º terminal acesse
 ```  
 cd backend
-  
 ```  
-e
+e instale as dependências com o comando
+```  
+npm install
+```  
+
+ no 2º terminal acesse
 ```  
 cd frontend
+```  
+e instale as dependências com o comando
+```  
+npm install
+```  
+### Execute o projeto  
+  em ambos os terminais digite
+```  
+npm start  
+```  
+
+### Caso queira parar a execução do docker use o comando
   
 ```  
+docker-compose down --rmi local --volumes --remove-orphans
+```  
+
+*Obs: apesar do docker ter abordagens mais simples onde com um comando é possível criar tudo, mas meu objetivo inicial era popular o banco de dados sem a necessidade de testar todas as rotas e para isso deveria usar as seeders do sequelize, então a melhor solução que encontrei foi essa.*
+
+</details>
+
+### Executando o projeto **localmente**
+
+<details>
+
+<summary>Clique para exibir os detalhes</summary>
 
 ### Substitua as variáveis de ambiente  
   
@@ -195,11 +240,32 @@ e em frontend:
 NEXT_PUBLIC_API_URL='http://localhost:`número definido na variável PORT, que está acima`' 
 ```  
   
-### Instale as dependências  
+  
+### Instale as dependências
+
+### Abra 2 terminais e em cada um dele entre nas pastas  
+  
+```  
+cd backend
+  
+```  
+e
+```  
+cd frontend
+  
+```
+
   Ainda com os 2 terminais abertos execute o comando abaixo em ambos:
+
 ```  
 npm install  
+```
+
+### Crie tabelas e migrations com o comando  
 ```  
+npx prisma migrate deploy
+```
+
 ### Execute o projeto  
   
 em backend use
@@ -209,7 +275,8 @@ npm run start:dev
 e em frontend use
 ``` 
 npm run dev  
-``` 
+```
+</details>
 ---
 
 # Próximos passos
