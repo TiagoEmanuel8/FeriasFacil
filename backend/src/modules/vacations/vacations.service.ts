@@ -97,25 +97,28 @@ export class VacationsService {
   }
 
   async update(id: number, updateVacationDto: UpdateVacationDto, userReq: any) {
-    if (userReq.id !== id) {
+    const user = await this.repository.findOne(id);
+
+    if (!user) throw new NotFoundError(`User ${id} is not found`);
+
+    if (user.user.id !== userReq.id || userReq.type === 'adm') {
       throw new UnauthorizedError(
         'You are not authorized to update this vacation',
       );
     }
-    const user = await this.repository.findOne(id);
-    if (!user) throw new NotFoundError(`User ${id} is not found`);
     return await this.repository.update(id, updateVacationDto);
   }
 
   async remove(id: number, userReq: any): Promise<void> {
     const vacation = await this.repository.findOne(id);
 
+    if (!vacation) throw new NotFoundError(`Vacation ${id} is not found`);
+
     if (vacation.user.id !== userReq.id || userReq.type === 'adm') {
       throw new UnauthorizedError(
         'You are not authorized to exclude this vacation',
       );
     }
-    if (!vacation) throw new NotFoundError(`Vacation ${id} is not found`);
     await this.repository.remove(id);
   }
 }
