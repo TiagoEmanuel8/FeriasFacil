@@ -132,7 +132,7 @@ export default function UserDashboard() {
   const closeModal = () => {
     setModalOpen(false);
     setModalContent({ title: "", message: "" });
-  };z
+  };
 
   return (
     <>
