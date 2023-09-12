@@ -42,8 +42,14 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedVacationId, setSelectedVacationId] = useState<number | null>(null);
+  const [token, setToken] = useState<string | null>(null);
 
   const toast = useToast();
+
+  useEffect(() => {
+    const clientToken = window.localStorage.getItem('token');
+    setToken(clientToken);
+  }, []);
 
   useEffect(() => {
     const fetchVacations = async () => {
@@ -60,18 +66,37 @@ export default function AdminDashboard() {
     fetchVacations();
   }, []);
 
-  const handleDeleteVacation = (vacationId: number | null) => {
+  const handleDeleteVacation = async (vacationId: number | null) => {
     if (!vacationId) return;
-    console.log(`Deleting vacation with ID: ${vacationId}`);
-    toast({
-      title: "Férias deletadas.",
-      description: "As férias foram deletadas com sucesso.",
-      status: "success",
-      duration: 5000,
-      isClosable: true,
-    });
-    closeModal();
-};
+
+    try {
+      if(!token) {
+        throw new Error('Token not available.');
+      }
+      await vacationService.deleteVacation(vacationId, token);
+      const updatedVacations = vacations.filter(v => v.id !== vacationId); 
+      setVacations(updatedVacations);
+      toast({
+        title: "Férias deletadas.",
+        description: "As férias foram deletadas com sucesso.",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+    } catch (error) {
+      console.error(`Failed to delete vacation with ID: ${vacationId}`, error);
+      toast({
+        title: "Erro ao deletar.",
+        description: "Ocorreu um erro ao tentar deletar as férias. Tente novamente.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    } finally {
+      closeModal();
+    }
+  };
+
   const openModal = (vacationId: number) => {
     setSelectedVacationId(vacationId);
     setIsModalOpen(true);
@@ -118,8 +143,6 @@ export default function AdminDashboard() {
               ))}
             </Tbody>
           </Table>
-
-          {/* Modal de confirmação de exclusão */}
           <Modal isOpen={isModalOpen} onClose={closeModal}>
             <ModalOverlay />
             <ModalContent>

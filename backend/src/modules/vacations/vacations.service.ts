@@ -10,11 +10,6 @@ import { differenceInMonths } from 'date-fns';
 @Injectable()
 export class VacationsService {
   constructor(private readonly repository: VacationRepository) {}
-  // primeiro período de férias só pode ser agendado para iniciar-se pelo menos 12 meses após a data de contratação.
-
-  // Não deve permitir cadastro de períodos de férias que se sobreponham, para um mesmo colaborador.
-
-  // As férias podem ser fracionadas em até três períodos, desde que um deles não seja ser inferior a 14 dias corridos e os demais não sejam inferiores a cinco dias corridos, segundo a Reforma Trabalhista (Lei 13.467/2017).
 
   async create(createVacationDto: CreateVacationDto) {
     const monthsSinceHire = differenceInMonths(
