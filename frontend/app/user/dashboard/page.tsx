@@ -39,6 +39,7 @@ export default function UserDashboard() {
   const [updatedPeriod, setUpdatedPeriod] = useState<string>("");
   const [isModalOpen, setModalOpen] = useState(false);
   const [modalContent, setModalContent] = useState({ title: "", message: "" });  
+  const [deleteVacationId, setDeleteVacationId] = useState<number | null>(null);
 
   useEffect(() => {
     const storedToken = window.localStorage.getItem('token');
@@ -59,7 +60,7 @@ export default function UserDashboard() {
       fetchData();
     }
   }, []);
-
+  
   const handleDelete = async (vacationId: number) => {
     if (!token) {
       console.error("Token not available");
@@ -131,7 +132,7 @@ export default function UserDashboard() {
   const closeModal = () => {
     setModalOpen(false);
     setModalContent({ title: "", message: "" });
-  };
+  };z
 
   return (
     <>
