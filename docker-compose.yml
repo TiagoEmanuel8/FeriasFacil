@@ -1,0 +1,43 @@
+version: '3.9'
+services:
+  frontend:
+    build: ./frontend
+    ports:
+      - 3000:80
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "lsof", "-t", "-i:80"]
+      timeout: 10s
+      retries: 5
+  backend:
+    build: ./backend
+    ports:
+      - 3001:3001
+    # ...
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - DATABASE_URL=mysql://root:root123@localhost:3306/feriasfacil
+      - PORT=3001
+      - JWT_KEY=jwt_secret
+    healthcheck:
+      test: ["CMD", "lsof", "-t", "-i:3001"]
+      timeout: 10s
+      retries: 5
+  db:
+    image: mysql:8.0.21
+    container_name: db
+    ports:
+      - 3002:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=123456
+    restart: 'always'
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      timeout: 10s
+      retries: 5
+    cap_add:
+      - SYS_NICE

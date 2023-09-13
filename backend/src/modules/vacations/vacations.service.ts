@@ -52,8 +52,10 @@ export class VacationsService {
       (vacation) => vacation.vacationPeriod,
     );
 
-    const hasAtLeastOnePeriodOf14Days = periods.includes(14);
-    if (!hasAtLeastOnePeriodOf14Days) {
+    const hasAtLeastOnePeriodOf14DaysOrMore = periods.some(
+      (period) => period >= 14,
+    );
+    if (!hasAtLeastOnePeriodOf14DaysOrMore) {
       throw new BadRequestError(
         'Ao fracionar férias, um dos períodos deve ter no mínimo 14 dias.',
       );

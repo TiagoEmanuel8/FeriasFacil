@@ -10,7 +10,6 @@ const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/position`;
 
 const createPosition = async (data: any) => {
   try {
-    console.log(API_URL, 'aqui')
     const response = await axios.post(API_URL, data);
 
     return response.data;
