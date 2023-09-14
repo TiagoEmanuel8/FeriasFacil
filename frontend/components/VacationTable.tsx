@@ -1,27 +1,14 @@
-import { Table, Thead, Tbody, Tr, Th, Td, DeleteIcon } from '@chakra-ui/react';
-import moment from 'moment';
-
-interface Vacation {
-  id: number;
-  vacationPeriod: number;
-  startVacation: string;
-  endVacation: string;
-  idUser: number;
-  user: {
-    id: number;
-    email: string;
-    name: string;
-    hireDate: string;
-    type: string;
-  };
-}
+import { Table, Thead, Tbody, Tr, Th, Td } from '@chakra-ui/react';
+import { DeleteIcon } from '@chakra-ui/icons';
+import { format, parseISO } from 'date-fns';
+import { Vacation } from '@/types/vacation.interface'
 
 interface Props {
   vacations: Vacation[];
   onDelete: (id: number) => void;
 }
 
-const VacationsTable: React.FC<Props> = ({ vacations, onDelete }) => (
+export const VacationsTable: React.FC<Props> = ({ vacations, onDelete }) => (
   <Table variant="striped" colorScheme="teal">
     <Thead>
       <Tr>
@@ -39,9 +26,9 @@ const VacationsTable: React.FC<Props> = ({ vacations, onDelete }) => (
         <Tr key={vacation.id}>
           <Td>{vacation.user.name}</Td>
           <Td>{vacation.user.email}</Td>
-          <Td>{moment(vacation.user.hireDate).format('DD/MM/YYYY')}</Td>
-          <Td>{moment(vacation.startVacation).format('DD/MM/YYYY')}</Td>
-          <Td>{moment(vacation.endVacation).format('DD/MM/YYYY')}</Td>
+          <Td>{format(parseISO(vacation.user.hireDate), 'dd/MM/yyyy')}</Td>
+          <Td>{format(parseISO(vacation.startVacation), 'dd/MM/yyyy')}</Td>
+          <Td>{format(parseISO(vacation.endVacation), 'dd/MM/yyyy')}</Td>
           <Td>{vacation.vacationPeriod}</Td>
           <Td>
             <DeleteIcon cursor="pointer" onClick={() => onDelete(vacation.id)} />
@@ -51,5 +38,3 @@ const VacationsTable: React.FC<Props> = ({ vacations, onDelete }) => (
     </Tbody>
   </Table>
 );
-
-export default VacationsTable;

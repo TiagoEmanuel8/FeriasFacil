@@ -6,7 +6,7 @@ interface Props {
   onDelete: () => void;
 }
 
-const DeleteConfirmationModal: React.FC<Props> = ({ isOpen, onClose, onDelete }) => (
+export const DeleteConfirmationModal: React.FC<Props> = ({ isOpen, onClose, onDelete }) => (
   <Modal isOpen={isOpen} onClose={onClose}>
     <ModalOverlay />
     <ModalContent>
@@ -24,5 +24,3 @@ const DeleteConfirmationModal: React.FC<Props> = ({ isOpen, onClose, onDelete })
     </ModalContent>
   </Modal>
 );
-
-export default DeleteConfirmationModal;

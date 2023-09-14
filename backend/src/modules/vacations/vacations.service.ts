@@ -97,7 +97,6 @@ export class VacationsService {
     const user = await this.repository.findOne(id);
 
     if (!user) throw new NotFoundError(`User ${id} is not found`);
-
     if (user.user.id !== userReq.id || userReq.type === 'adm') {
       throw new UnauthorizedError(
         'You are not authorized to update this vacation',
@@ -110,7 +109,10 @@ export class VacationsService {
     const vacation = await this.repository.findOne(id);
 
     if (!vacation) throw new NotFoundError(`Vacation ${id} is not found`);
-
+    console.log(vacation.user.id); // 4
+    console.log(userReq.id); // 1
+    console.log(userReq.type); // user
+    console.log(userReq.type === 'adm');
     if (vacation.user.id !== userReq.id || userReq.type === 'adm') {
       throw new UnauthorizedError(
         'You are not authorized to exclude this vacation',

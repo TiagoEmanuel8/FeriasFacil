@@ -1,41 +1,11 @@
 "use client"
 
-import { useEffect, useState } from 'react';
-import {
-  Box,
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
-  Spinner,
-  Center,
-  Stack,
-  Link,
-  Text,
-  Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton, Button, useToast
-} from '@chakra-ui/react';
-import { DeleteIcon } from '@chakra-ui/icons';
+import { SetStateAction, useEffect, useState } from 'react';
+import { Box, Spinner, Center, Stack, Text, Link, useToast } from '@chakra-ui/react';
 import { vacationService } from '@/api/vacationAPI';
-import moment from 'moment';
-
-interface User {
-  id: number;
-  email: string;
-  name: string;
-  hireDate: string;
-  type: string;
-}
-
-interface Vacation {
-  id: number;
-  vacationPeriod: number;
-  startVacation: string;
-  endVacation: string;
-  idUser: number;
-  user: User;
-}
+import { VacationsTable } from '@/components/VacationTable';
+import { DeleteConfirmationModal } from '@/components/DeleteConfirmationModal';
+import { Vacation } from '@/types/vacation.interface';
 
 export default function AdminDashboard() {
   const [vacations, setVacations] = useState<Vacation[]>([]);
@@ -63,8 +33,10 @@ export default function AdminDashboard() {
       }
     };
     
-    fetchVacations();
-  }, []);
+    if (token) {
+      fetchVacations();
+    }
+  }, [token]);
 
   const handleDeleteVacation = async (vacationId: number | null) => {
     if (!vacationId) return;
@@ -93,19 +65,9 @@ export default function AdminDashboard() {
         isClosable: true,
       });
     } finally {
-      closeModal();
+      setIsModalOpen(false);
     }
   };
-
-  const openModal = (vacationId: number) => {
-    setSelectedVacationId(vacationId);
-    setIsModalOpen(true);
-  }
-
-  const closeModal = () => {
-    setSelectedVacationId(null);
-    setIsModalOpen(false);
-  }
 
   return (
     <Box>
@@ -115,51 +77,15 @@ export default function AdminDashboard() {
         </Center>
       ) : (
         <>
-          <Table variant="striped" colorScheme="teal">
-            <Thead>
-              <Tr>
-                <Th>Nome</Th>
-                <Th>Email</Th>
-                <Th>Data de Contratação</Th>
-                <Th>Início das Férias</Th>
-                <Th>Final das Férias</Th>
-                <Th>Total de Dias</Th>
-                <Th>Ação</Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {vacations.map((vacation) => (
-                <Tr key={vacation.id}>
-                  <Td>{vacation.user.name}</Td>
-                  <Td>{vacation.user.email}</Td>
-                  <Td>{moment(vacation.user.hireDate).format('DD/MM/YYYY')}</Td>
-                  <Td>{moment(vacation.startVacation).format('DD/MM/YYYY')}</Td>
-                  <Td>{moment(vacation.endVacation).format('DD/MM/YYYY')}</Td>
-                  <Td>{vacation.vacationPeriod}</Td>
-                  <Td>
-                    <DeleteIcon cursor="pointer" onClick={() => openModal(vacation.id)} />
-                  </Td>
-                </Tr>
-              ))}
-            </Tbody>
-          </Table>
-          <Modal isOpen={isModalOpen} onClose={closeModal}>
-            <ModalOverlay />
-            <ModalContent>
-              <ModalHeader>Confirmar Exclusão</ModalHeader>
-              <ModalCloseButton />
-              <ModalBody>
-                Você tem certeza que deseja deletar essas férias?
-              </ModalBody>
-
-              <ModalFooter>
-                <Button colorScheme="red" mr={3} onClick={() => handleDeleteVacation(selectedVacationId)}>
-                  Deletar
-                </Button>
-                <Button variant="ghost" onClick={closeModal}>Cancelar</Button>
-              </ModalFooter>
-            </ModalContent>
-          </Modal>
+          <VacationsTable vacations={vacations} onDelete={(id: SetStateAction<number | null>) => {
+            setSelectedVacationId(id);
+            setIsModalOpen(true);
+          }} />
+          <DeleteConfirmationModal 
+            isOpen={isModalOpen} 
+            onClose={() => setIsModalOpen(false)} 
+            onDelete={() => handleDeleteVacation(selectedVacationId)}
+          />
         </>
       )}
       <Stack pt={6}>
@@ -170,4 +96,3 @@ export default function AdminDashboard() {
     </Box>
   );
 }
-
